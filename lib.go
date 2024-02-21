@@ -59,27 +59,28 @@ func GetNameAccountKeySync(hashed256Name []byte, nameClass, nameParent common.Pu
 	return nameAccountKey, nonce, nil
 }
 
-type DeriveResult struct {
+type deriveResult struct {
 	PubKey common.PublicKey
 	Hashed []byte
 }
 
-func DeriveSync(name string, parent, classKey common.PublicKey) (DeriveResult, error) {
+func DeriveSync(name string, parent, classKey common.PublicKey) (deriveResult, error) {
 	if parent != (common.PublicKey{}) {
 		parent = RootDomainAccount
 	}
 	hashed := GetHashedNameSync(name)
 	pubKey, _, err := GetNameAccountKeySync(hashed, classKey, parent)
 	if err != nil {
-		return DeriveResult{}, err
+		return deriveResult{}, err
 	}
-	return DeriveResult{PubKey: pubKey, Hashed: hashed}, nil
+	return deriveResult{PubKey: pubKey, Hashed: hashed}, nil
 }
 
 type DomainKeyResult struct {
-	DeriveResult
-	IsSub       bool
+	PubKey      common.PublicKey
 	Parent      common.PublicKey
+	Hashed      []byte
+	IsSub       bool
 	IsSubRecord bool
 }
 
@@ -89,9 +90,9 @@ func GetDomainKeySync(domain string, record RecordVersion) (DomainKeyResult, err
 
 	var (
 		recordClass common.PublicKey
-		parentKey   DeriveResult
-		subKey      DeriveResult
-		result      DeriveResult
+		parentKey   deriveResult
+		subKey      deriveResult
+		result      deriveResult
 		err         error
 	)
 
@@ -118,7 +119,7 @@ func GetDomainKeySync(domain string, record RecordVersion) (DomainKeyResult, err
 			return DomainKeyResult{}, err
 		}
 
-		return DomainKeyResult{DeriveResult: result, IsSub: true, Parent: parentKey.PubKey}, nil
+		return DomainKeyResult{PubKey: result.PubKey, Hashed: result.Hashed, IsSub: true, Parent: parentKey.PubKey}, nil
 
 	} else if len(splitted) == 3 && record != 0 {
 
@@ -143,7 +144,7 @@ func GetDomainKeySync(domain string, record RecordVersion) (DomainKeyResult, err
 			return DomainKeyResult{}, err
 		}
 
-		return DomainKeyResult{DeriveResult: result, IsSub: true, Parent: parentKey.PubKey, IsSubRecord: true}, nil
+		return DomainKeyResult{PubKey: result.PubKey, Hashed: result.Hashed, IsSub: true, Parent: parentKey.PubKey, IsSubRecord: true}, nil
 
 	} else if len(splitted) >= 3 {
 		return DomainKeyResult{}, ErrInvalidInput
@@ -152,5 +153,5 @@ func GetDomainKeySync(domain string, record RecordVersion) (DomainKeyResult, err
 	if result, err = DeriveSync(domain, RootDomainAccount, common.PublicKey{}); err != nil {
 		return DomainKeyResult{}, err
 	}
-	return DomainKeyResult{DeriveResult: result, IsSub: false}, nil
+	return DomainKeyResult{PubKey: result.PubKey, Hashed: result.Hashed, IsSub: false}, nil
 }

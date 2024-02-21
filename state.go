@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -17,7 +18,7 @@ var (
 )
 
 const (
-	HEADER_LEN int = 96
+	HEADER_LEN = 96
 )
 
 var (
@@ -33,47 +34,71 @@ var (
 	TOKEN_PROGRAM_ID = common.PublicKeyFromString("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 )
 
+type RetrieveResult struct {
+	Registry *NameRegistryState
+	NftOwner common.PublicKey
+}
 type NameRegistryState struct {
-	ParentName, Owner, Class common.PublicKey
-	Data                     *[]byte
+	ParentName,
+	Owner,
+	Class common.PublicKey
+	Data []byte `borsh_skip:"true"`
 }
 
 func (ns *NameRegistryState) Deserialize(data []byte) error {
-	if err := borsh.Deserialize(ns, data); err != nil {
+	var schema struct {
+		ParentName [32]byte
+		Owner      [32]byte
+		Class      [32]byte
+	}
+	if err := borsh.Deserialize(&schema, data); err != nil {
 		return err
 	}
 
-	if len(data) > int(HEADER_LEN) {
-		data = data[HEADER_LEN:]
-		ns.Data = &data
+	ns.ParentName = common.PublicKeyFromBytes(schema.ParentName[:])
+	ns.Owner = common.PublicKeyFromBytes(schema.Owner[:])
+	ns.Class = common.PublicKeyFromBytes(schema.Class[:])
+
+	if len(data) > HEADER_LEN {
+		ns.Data = data[HEADER_LEN:]
 	}
 
 	return nil
 }
 
-func Retrieve(conn *client.Client, nameAccountKey common.PublicKey) (map[string]interface{}, error) {
+func (ns *NameRegistryState) Retrieve(conn *client.Client, nameAccountKey common.PublicKey) (RetrieveResult, error) {
 	var (
-		nameAccount       client.AccountInfo
-		err               error
-		nameRegistryState *NameRegistryState
+		nameAccount client.AccountInfo
+		nftOwner    common.PublicKey
+		err         error
 	)
+
 	if nameAccount, err = conn.GetAccountInfo(context.Background(), nameAccountKey.ToBase58()); err != nil {
-		return nil, err
+		return RetrieveResult{}, err
 	}
+
 	if reflect.ValueOf(nameAccount).IsZero() {
-		return nil, ErrAccountDoesNotExist
+		return RetrieveResult{}, ErrAccountDoesNotExist
 	}
 
-	if err = nameRegistryState.Deserialize(nameAccount.Data); err != nil {
-		return nil, err
+	if err = ns.Deserialize(nameAccount.Data); err != nil {
+		return RetrieveResult{}, err
 	}
 
-	if len(nameAccount.Data) > HEADER_LEN {
-		slice := nameAccount.Data[HEADER_LEN:]
-		nameRegistryState.Data = &slice
+	if nftOwner, err = RetrieveNftOwner(conn, nameAccountKey); err != nil {
+		if errors.Is(err, ErrZeroMintSupply) {
+			return RetrieveResult{
+				Registry: ns,
+			}, fmt.Errorf("error occured but RetrieveResult{Registry: ns} is set, err: %w", err)
+		}
+
+		return RetrieveResult{}, err
 	}
 
-	_, err = RetrieveNftOwner(conn, nameAccountKey)
+	return RetrieveResult{
+		Registry: ns,
+		NftOwner: nftOwner,
+	}, nil
 
 }
 
@@ -82,7 +107,7 @@ func RetrieveNftOwner(conn *client.Client, nameAccount common.PublicKey) (common
 	var (
 		mint     common.PublicKey
 		mintInfo token.MintAccount
-		result rpc.JsonRpcResponse[rpc.GetProgramAccounts]
+		result   rpc.JsonRpcResponse[rpc.GetProgramAccounts]
 		err      error
 	)
 	seeds := [][]byte{
@@ -99,43 +124,44 @@ func RetrieveNftOwner(conn *client.Client, nameAccount common.PublicKey) (common
 	}
 
 	if mintInfo.Supply == 0 {
-		return common.PublicKey{}, ErrZeroMintSupply
+		fmt.Printf("-------------------mint supply is %d-------------------\n", mintInfo.Supply)
+		// return common.PublicKey{}, ErrZeroMintSupply
 	}
 
 	filter := rpc.GetProgramAccountsConfig{
 		Filters: []rpc.GetProgramAccountsConfigFilter{
-			rpc.GetProgramAccountsConfigFilter{
-				MemCmp: &rpc.GetProgramAccountsConfigFilterMemCmp{
-					Offset: 0,
-					Bytes: mint.ToBase58(),
-				},
-			},
-			rpc.GetProgramAccountsConfigFilter{
+			// {
+			// 	MemCmp: &rpc.GetProgramAccountsConfigFilterMemCmp{
+			// 		Offset: 0,
+			// 		Bytes:  mint.ToBase58(),
+			// 	},
+			// },
+			{
 				MemCmp: &rpc.GetProgramAccountsConfigFilterMemCmp{
 					Offset: 64,
-					Bytes: "2",
+					Bytes:  "2",
 				},
+			},
+			{
 				DataSize: 165,
 			},
 		},
-		
 	}
 
 	if result, err := conn.RpcClient.GetProgramAccountsWithConfig(context.Background(), TOKEN_PROGRAM_ID.ToBase58(), filter); err != nil {
-		return common.PublicKey{}, fmt.Errorf("%v : %w", err, result.GetError().Error())
+		return common.PublicKey{}, fmt.Errorf("%v : result.GetError()::%w", err, result.GetError())
 	}
 
 	if len(result.GetResult()) != 1 {
-		return common.PublicKey{}, nil
+		return common.PublicKey{}, fmt.Errorf("unexpected length")
 	}
 
 	if data, ok := result.GetResult()[0].Account.Data.([]byte); ok {
-		
-	}
-	
-	
+		return common.PublicKeyFromBytes(data[32:64]), nil
 
-	return common.PublicKey{}, nil
+	}
+
+	return common.PublicKey{}, fmt.Errorf("unexpected data type")
 }
 
 func getMint(rpcClient *client.Client, address common.PublicKey, commitment rpc.Commitment, programId common.PublicKey) (token.MintAccount, error) {
