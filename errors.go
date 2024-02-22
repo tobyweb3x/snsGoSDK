@@ -7,6 +7,7 @@ type SNSError error
 var (
 	ErrInvalidInput        SNSError = fmt.Errorf("SNSError: InvalidInput")
 	ErrAccountDoesNotExist SNSError = fmt.Errorf("SNSError: AccountDoesNotExist")
+	NoAccountData          SNSError = fmt.Errorf("SNSError: NoAccountData")
 )
 
 type TokenError error
