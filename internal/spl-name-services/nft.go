@@ -8,8 +8,23 @@ import (
 	"github.com/blocto/solana-go-sdk/client"
 	"github.com/blocto/solana-go-sdk/common"
 	"github.com/blocto/solana-go-sdk/rpc"
-)
+) 
 
+// RetrieveNftOwner returns the publicKey associated with the nameAccount parameter. It returns
+// named errors: ErrIgnored and ErrZeroMintSupply, which can be ignored.
+/*
+ns := someFuncCall()
+if nftOwner, err = RetrieveNftOwner(conn, nameAccountKey); err != nil {
+		if errors.Is(err, ErrZeroMintSupply) || 
+			errors.Is(err, ErrIgnored) {
+			return RetrieveResult{
+				Registry: ns,
+			}, nil
+		}
+		return RetrieveResult{}, err
+	}
+*/
+// This is due to accounting for the error throwing of Javascript which does not neccesarilly halt program execution.
 func RetrieveNftOwner(conn *client.Client, nameAccount common.PublicKey) (common.PublicKey, error) {
 
 	var (
@@ -69,7 +84,6 @@ func RetrieveNftOwner(conn *client.Client, nameAccount common.PublicKey) (common
 
 	if data, ok := result.GetResult()[0].Account.Data.([]byte); ok {
 		return common.PublicKeyFromBytes(data[32:64]), nil
-
 	}
 
 	return common.PublicKey{}, fmt.Errorf("unexpected data type")

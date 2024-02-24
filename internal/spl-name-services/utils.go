@@ -10,6 +10,7 @@ import (
 	"github.com/blocto/solana-go-sdk/common"
 )
 
+// GetDomainKeySync is used to compute the public key of a domain or subdomain.
 func GetDomainKeySync(domain string, record RecordVersion) (DomainKeyResult, error) {
 
 	domain = strings.TrimSuffix(domain, ".sol")
@@ -125,6 +126,7 @@ func deriveSync(name string, parent, classKey common.PublicKey) (deriveResult, e
 	return deriveResult{PubKey: pubKey, Hashed: hashed}, nil
 }
 
+// ReverseLookup is used to perform a reverse look up.
 func ReverseLookup(rpcClient *client.Client, nameAccount common.PublicKey) (string, error) {
 	var (
 		reverseLookupAccount common.PublicKey

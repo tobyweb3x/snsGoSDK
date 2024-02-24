@@ -14,8 +14,17 @@ import (
 )
 
 var (
-	TWITTER_ROOT_PARENT_REGISTRY_KEY = common.PublicKeyFromString("4YcexoW3r78zz16J2aqmukBLRwGq6rAvWzJpkYAXqebv")
-	TWITTER_VERIFICATION_AUTHORITY   = common.PublicKeyFromString("FvPH7PrVrLGKPfqaf3xJodFTjZriqrAXXLTVWEorTFBi")
+	/*
+		The "".twitter" TLD.
+			TwitterRootParentRegistryKey = common.PublicKeyFromString("4YcexoW3r78zz16J2aqmukBLRwGq6rAvWzJpkYAXqebv")
+	*/
+	TwitterRootParentRegistryKey = common.PublicKeyFromString("4YcexoW3r78zz16J2aqmukBLRwGq6rAvWzJpkYAXqebv")
+
+	/*
+		The ".twitter" TLD authority.
+			TwittwrVerificationAuthority   = common.PublicKeyFromString("FvPH7PrVrLGKPfqaf3xJodFTjZriqrAXXLTVWEorTFBi")
+	*/
+	TwittwrVerificationAuthority = common.PublicKeyFromString("FvPH7PrVrLGKPfqaf3xJodFTjZriqrAXXLTVWEorTFBi")
 )
 
 type ReverseTwitterRegistryState struct {
@@ -64,7 +73,7 @@ func GetTwitterRegistry(rpcClient *client.Client, twitterHandle string) (spl.Ret
 	twitterHandle = strings.TrimPrefix(twitterHandle, "@")
 
 	hashedTwitterHandle := spl.GetHashedNameSync(twitterHandle)
-	if twitterHandleRegistryKey, _, err = spl.GetNameAccountKeySync(hashedTwitterHandle, spl.NoPublickKeyArg, TWITTER_ROOT_PARENT_REGISTRY_KEY); err != nil {
+	if twitterHandleRegistryKey, _, err = spl.GetNameAccountKeySync(hashedTwitterHandle, spl.NoPublickKeyArg, TwitterRootParentRegistryKey); err != nil {
 		return spl.RetrieveResult{}, err
 	}
 
@@ -82,7 +91,7 @@ func GetHandleAndRegistryKey(rpcClient *client.Client, verifiedPubkey common.Pub
 		err                error
 	)
 	hashedVerifiedPubkey := spl.GetHashedNameSync(verifiedPubkey.ToBase58())
-	if reverseRegistryKey, _, err = spl.GetNameAccountKeySync(hashedVerifiedPubkey, TWITTER_VERIFICATION_AUTHORITY, TWITTER_ROOT_PARENT_REGISTRY_KEY); err != nil {
+	if reverseRegistryKey, _, err = spl.GetNameAccountKeySync(hashedVerifiedPubkey, TwittwrVerificationAuthority, TwitterRootParentRegistryKey); err != nil {
 		return common.PublicKey{}, "", err
 	}
 

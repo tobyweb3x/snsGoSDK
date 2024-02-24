@@ -10,10 +10,12 @@ import (
 	"github.com/near/borsh-go"
 )
 
+// RetrieveResult is a helper struct for NameRegistryState.Retrieve.
 type RetrieveResult struct {
 	Registry *NameRegistryState
 	NftOwner common.PublicKey
 }
+
 type NameRegistryState struct {
 	ParentName,
 	Owner,
@@ -21,7 +23,7 @@ type NameRegistryState struct {
 	Data []byte `borsh_skip:"true"`
 }
 
-func (ns *NameRegistryState) Deserialize(data []byte) error {
+func (ns *NameRegistryState) deserialize(data []byte) error {
 	var schema struct {
 		ParentName [32]byte
 		Owner      [32]byte
@@ -57,7 +59,7 @@ func (ns *NameRegistryState) Retrieve(conn *client.Client, nameAccountKey common
 		return RetrieveResult{}, ErrAccountDoesNotExist
 	}
 
-	if err = ns.Deserialize(nameAccount.Data); err != nil {
+	if err = ns.deserialize(nameAccount.Data); err != nil {
 		return RetrieveResult{}, err
 	}
 

@@ -10,6 +10,25 @@ import (
 	"github.com/blocto/solana-go-sdk/rpc"
 )
 
+// getMint returns the mint account for the given address. This function is the equivalent of the
+// solana web3js function `getMint` and `unpackMint` in the solana web3js library.
+// The function can returned these name errors: errTokenAccountNotFound, errTokenInvalidAccountOwner, errTokenInvalidAccountSize,
+// which can be ignored.
+/*
+	mint := someFuncCall()
+
+	mintInfo, err := getMint(conn, mint, NoCommitmentArg, NoPublickKeyArg)
+	if err != nil {
+		if errors.Is(err, ErrTokenAccountNotFound) || 
+			errors.Is(err, ErrTokenInvalidAccountOwner) || 
+			errors.Is(err, ErrTokenInvalidAccountSize) {
+			
+				return mint, ErrIgnored
+		}
+		return common.PublicKey{}, err
+	}
+*/
+// This is due to accounting for the error throwing of Javascript which does not neccesarilly halt program execution.
 func getMint(rpcClient *client.Client, address common.PublicKey, commitment rpc.Commitment, programId common.PublicKey) (token.MintAccount, error) {
 	mintAccountInfo, err := rpcClient.GetAccountInfo(context.Background(), address.ToBase58())
 	if err != nil {
