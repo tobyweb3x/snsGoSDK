@@ -2,88 +2,86 @@ package main
 
 import (
 	"fmt"
+	"log"
 
+	"snsGoSDK/internal/twitter"
+
+	"github.com/blocto/solana-go-sdk/client"
 	"github.com/blocto/solana-go-sdk/rpc"
 )
 
 func main() {
-	var (
-		res DomainKeyResult
-		// publicKey        common.PublicKey
-		res2             RetrieveResult
-		err              error
-		reverseLookUPStr string
-		nm               NameRegistryState
-	)
+	// 	var (
+	// 		res DomainKeyResult
+	// 		// publicKey        common.PublicKey
+	// 		res2             RetrieveResult
+	// 		err              error
+	// 		reverseLookUPStr string
+	// 		nm               NameRegistryState
+	// 	)
 
 	rpcClient := createConnection(rpc.MainnetRPCEndpoint)
 
-	/******************************************
-	 * Bonfida
-	 ******************************************/
+	// 	/******************************************
+	// 	 * Bonfida
+	// 	 ******************************************/
 
-	if res, err = GetDomainKeySync("bonfida", RecordVersion2); err != nil {
-		fmt.Println("error was ", err)
-	} else {
-		fmt.Printf("pubkey for bonfida and struct values are %+v\n", res.PubKey.ToBase58())
+	// 	testStruct := struct {
+	// 		domainName []string
+	// 	}{
+	// 		[]string{"bonfida", "wallet-guide-5.sol", "sub-0.wallet-guide-3.sol"},
+	// 	}
+
+	// 	for k, v := range testStruct.domainName {
+
+	// 		fmt.Printf(
+	// 			`******************************************
+	// * test %d, for domain --- %s
+	// ******************************************`+"\n", k, v)
+
+	// 		fmt.Println("*****GetDomainKeySync*****")
+
+	// 		if res, err = GetDomainKeySync(v, RecordVersion2); err != nil {
+	// 			fmt.Println(err)
+	// 		} else {
+	// 			fmt.Printf("pubkey for `%s` is -- %s AND THE STRUCT VALUES ARE %+v\n", v, res.PubKey.ToBase58(), res)
+	// 		}
+	// 		fmt.Println("*******************************************")
+
+	// 		fmt.Println("*****ReverseLookUp*****")
+
+	// 		if reverseLookUPStr, err = ReverseLookup(rpcClient, res.PubKey); err != nil {
+	// 			fmt.Println(err)
+	// 		} else {
+	// 			fmt.Printf("reverse lookup for `%s` pubkey(%s) is = `%s` \n", v, res.PubKey.ToBase58(), reverseLookUPStr)
+	// 		}
+	// 		fmt.Println("*******************************************")
+
+	// 		fmt.Println("*****NameStateRegistry.Retrieve*****")
+
+	// 		if res2, err = nm.Retrieve(rpcClient, res.PubKey); err != nil {
+	// 			fmt.Println(err)
+	// 		} else {
+	// 			fmt.Printf("owner for `%s` is %s\n", v, res2.Registry.Owner)
+	// 		}
+	// 		fmt.Println("*******************************************")
+	// 		fmt.Printf("\n\n")
+
+	// }
+
+	a, err := twitter.GetTwitterRegistry(rpcClient, "@oluwatobialone")
+	if err != nil {
+		log.Fatal("err:", err)
 	}
+	fmt.Printf("public key associated to the Twitter handle @oluwatobialone is %s\n", a.Registry.Owner.ToBase58())
 
-	if reverseLookUPStr, err = ReverseLookup(rpcClient, res.PubKey); err != nil {
-		fmt.Println("reverseLookup: err was ", err)
-	} else {
-		fmt.Printf("reverse lookup for bonfida pubkey(%s) is = `%s` ", res.PubKey.ToBase58(), reverseLookUPStr)
+	b, c, err := twitter.GetHandleAndRegistryKey(rpcClient, a.Registry.Owner)
+	if err != nil {
+		log.Fatal(err)
 	}
+	fmt.Println(b, c)
+}
 
-	if res2, err = nm.Retrieve(rpcClient, res.PubKey); err != nil {
-		fmt.Println("Retrieve: error was ", err)
-	} else {
-		fmt.Println("owner for bonfida ", res2.NftOwner.ToBase58())
-	}
-	fmt.Printf("\n\n")
-
-	/******************************************
-	* dex.bonfida
-	******************************************/
-
-	if res, err = GetDomainKeySync("dex.bonfida", RecordVersion2); err != nil {
-		fmt.Println("error was ", err)
-	} else {
-		fmt.Printf("pubkey for dex.bonfand struct values are %+v\nida ", res.PubKey.ToBase58())
-	}
-
-	if reverseLookUPStr, err = ReverseLookup(rpcClient, res.PubKey); err != nil {
-		fmt.Println("reverseLookup: err was ", err)
-	} else {
-		fmt.Printf("reverse lookup for dex.bonfida pubkey(%s) is = `%s` ", res.PubKey.ToBase58(), reverseLookUPStr)
-	}
-
-	if res2, err = nm.Retrieve(rpcClient, res.PubKey); err != nil {
-		fmt.Println("Retrieve: error was ", err)
-	} else {
-		fmt.Println("owner for dex.bonfida ", res2.NftOwner.ToBase58())
-	}
-	fmt.Printf("\n\n")
-
-	/******************************************
-	* IPFS.bonfida
-	******************************************/
-
-	if res, err = GetDomainKeySync("IPFS.bonfida", RecordVersion2); err != nil {
-		fmt.Println("error was ", err)
-	} else {
-		fmt.Printf("pubkey for IPFS.bonand struct values are %+v\nfida ", res.PubKey.ToBase58())
-	}
-
-	if reverseLookUPStr, err = ReverseLookup(rpcClient, res.PubKey); err != nil {
-		fmt.Println("reverseLookup: err was ", err)
-	} else {
-		fmt.Printf("reverse lookup for IPFS.bonfida pubkey(%s) is = `%s` ", res.PubKey.ToBase58(), reverseLookUPStr)
-	}
-
-	if res2, err = nm.Retrieve(rpcClient, res.PubKey); err != nil {
-		fmt.Println("Retrieve: error was ", err)
-	} else {
-		fmt.Println("owner for IPFS.bonfida ", res2.NftOwner.ToBase58())
-	}
-	fmt.Printf("\n\n")
+func createConnection(connType string) *client.Client {
+	return client.NewClient(connType)
 }
