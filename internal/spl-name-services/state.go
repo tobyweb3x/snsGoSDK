@@ -78,3 +78,35 @@ func (ns *NameRegistryState) Retrieve(conn *client.Client, nameAccountKey common
 	}, nil
 
 }
+
+func (ns *NameRegistryState) RetrieveBatch(conn *client.Client, nameAccountKeys []common.PublicKey) ([]NameRegistryState, error) {
+	var (
+		nameAccounts []client.AccountInfo
+		err          error
+	)
+
+	container := make([]string, 0, len(nameAccountKeys))
+	for i := 0; i < len(nameAccountKeys); i++ {
+		container = append(container, nameAccountKeys[i].ToBase58())
+	}
+
+	if nameAccounts, err = conn.GetMultipleAccounts(context.Background(), container); err != nil {
+		return nil, err
+	}
+
+	container2 := make([]NameRegistryState, 0, len(nameAccountKeys))
+
+	for i := 0; i < len(nameAccounts); i++ {
+
+		if reflect.ValueOf(nameAccounts[i]).IsZero() {
+			return nil, ErrAccountDoesNotExist
+		}
+		if err = ns.deserialize(nameAccounts[i].Data); err != nil {
+			return nil, err
+		}
+
+		container2 = append(container2, *ns)
+	}
+
+	return container2, nil
+}

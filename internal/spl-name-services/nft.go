@@ -8,14 +8,14 @@ import (
 	"github.com/blocto/solana-go-sdk/client"
 	"github.com/blocto/solana-go-sdk/common"
 	"github.com/blocto/solana-go-sdk/rpc"
-) 
+)
 
 // RetrieveNftOwner returns the publicKey associated with the nameAccount parameter. It returns
 // named errors: ErrIgnored and ErrZeroMintSupply, which can be ignored.
 /*
 ns := someFuncCall()
 if nftOwner, err = RetrieveNftOwner(conn, nameAccountKey); err != nil {
-		if errors.Is(err, ErrZeroMintSupply) || 
+		if errors.Is(err, ErrZeroMintSupply) ||
 			errors.Is(err, ErrIgnored) {
 			return RetrieveResult{
 				Registry: ns,
@@ -28,8 +28,7 @@ if nftOwner, err = RetrieveNftOwner(conn, nameAccountKey); err != nil {
 func RetrieveNftOwner(conn *client.Client, nameAccount common.PublicKey) (common.PublicKey, error) {
 
 	var (
-		mint common.PublicKey
-		// mintInfo token.MintAccount
+		mint   common.PublicKey
 		result rpc.JsonRpcResponse[rpc.GetProgramAccounts]
 		err    error
 	)
@@ -67,6 +66,7 @@ func RetrieveNftOwner(conn *client.Client, nameAccount common.PublicKey) (common
 					Offset: 64,
 					Bytes:  "2",
 				},
+				// DataSize: 165,
 			},
 			{
 				DataSize: 165,
@@ -75,7 +75,7 @@ func RetrieveNftOwner(conn *client.Client, nameAccount common.PublicKey) (common
 	}
 
 	if result, err = conn.RpcClient.GetProgramAccountsWithConfig(context.Background(), TOKEN_PROGRAM_ID.ToBase58(), filter); err != nil {
-		return common.PublicKey{}, fmt.Errorf("%v: %w", err, ErrIgnored)
+		return common.PublicKey{}, err
 	}
 
 	if len(result.GetResult()) != 1 {

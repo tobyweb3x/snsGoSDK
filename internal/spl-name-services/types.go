@@ -21,7 +21,7 @@ type deriveResult struct {
 }
 
 // RecordVersion type for spl-name-services.
-type RecordVersion int8
+type RecordVersion uint8
 
 const (
 	/*
@@ -58,9 +58,10 @@ var (
 
 	/*
 		Central State.
-			CentralStateSNSRecords = common.PublicKeyFromString("2pMnqHvei2N5oDcVGCRdZx48gqt i199v5CsyTTafsbo")
+			CentralStateSNSRecords = common.PublicKeyFromString("2pMnqHvei2N5oDcVGCRdZx48gqti199wr5CsyTTafsbo")
+
 	*/
-	CentralStateSNSRecords = common.PublicKeyFromString("2pMnqHvei2N5oDcVGCRdZx48gqt i199v5CsyTTafsbo")
+	CentralStateSNSRecords = common.PublicKeyFromString("2pMnqHvei2N5oDcVGCRdZx48gqti199wr5CsyTTafsbo")
 
 	/*
 		The ".sol" TLD.
