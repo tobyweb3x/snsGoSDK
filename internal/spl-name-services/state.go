@@ -2,25 +2,30 @@ package spl_name_services
 
 import (
 	"context"
-	"errors"
 	"reflect"
 
-	"github.com/blocto/solana-go-sdk/client"
-	"github.com/blocto/solana-go-sdk/common"
+	"github.com/gagliardetto/solana-go"
+	"github.com/gagliardetto/solana-go/rpc"
 	"github.com/near/borsh-go"
 )
 
 // RetrieveResult is a helper struct for NameRegistryState.Retrieve.
 type RetrieveResult struct {
 	Registry *NameRegistryState
-	NftOwner common.PublicKey
+	NftOwner solana.PublicKey
 }
 
 type NameRegistryState struct {
+	headerLen uint8
 	ParentName,
 	Owner,
-	Class common.PublicKey
+	Class solana.PublicKey
 	Data []byte `borsh_skip:"true"`
+}
+
+func (ns *NameRegistryState) HEADER_LEN() uint8 {
+	ns.headerLen = 98
+	return ns.headerLen
 }
 
 func (ns *NameRegistryState) deserialize(data []byte) error {
@@ -33,9 +38,9 @@ func (ns *NameRegistryState) deserialize(data []byte) error {
 		return err
 	}
 
-	ns.ParentName = common.PublicKeyFromBytes(schema.ParentName[:])
-	ns.Owner = common.PublicKeyFromBytes(schema.Owner[:])
-	ns.Class = common.PublicKeyFromBytes(schema.Class[:])
+	ns.ParentName = solana.PublicKeyFromBytes(schema.ParentName[:])
+	ns.Owner = solana.PublicKeyFromBytes(schema.Owner[:])
+	ns.Class = solana.PublicKeyFromBytes(schema.Class[:])
 
 	if len(data) > HEADER_LEN {
 		ns.Data = data[HEADER_LEN:]
@@ -44,31 +49,23 @@ func (ns *NameRegistryState) deserialize(data []byte) error {
 	return nil
 }
 
-func (ns *NameRegistryState) Retrieve(conn *client.Client, nameAccountKey common.PublicKey) (RetrieveResult, error) {
-	var (
-		nameAccount client.AccountInfo
-		nftOwner    common.PublicKey
-		err         error
-	)
+func (ns *NameRegistryState) Retrieve(rpcClient *rpc.Client, nameAccountKey solana.PublicKey) (RetrieveResult, error) {
 
-	if nameAccount, err = conn.GetAccountInfo(context.Background(), nameAccountKey.ToBase58()); err != nil {
+	nameAccount, err := rpcClient.GetAccountInfo(context.Background(), nameAccountKey)
+	if err != nil {
 		return RetrieveResult{}, err
 	}
 
-	if reflect.ValueOf(nameAccount).IsZero() {
-		return RetrieveResult{}, ErrAccountDoesNotExist
+	if reflect.ValueOf(nameAccount).IsZero() || nameAccount.Value.Owner.IsZero() {
+		return RetrieveResult{}, NewSNSError(AccountDoesNotExist, "The name account does not exist", nil)
 	}
 
-	if err = ns.deserialize(nameAccount.Data); err != nil {
+	if err = ns.deserialize(nameAccount.GetBinary()); err != nil {
 		return RetrieveResult{}, err
 	}
 
-	if nftOwner, err = RetrieveNftOwner(conn, nameAccountKey); err != nil {
-		if errors.Is(err, ErrZeroMintSupply) || errors.Is(err, ErrIgnored) {
-			return RetrieveResult{
-				Registry: ns,
-			}, nil
-		}
+	nftOwner, err := retrieveNftOwnerV2(rpcClient, nameAccountKey)
+	if err != nil {
 		return RetrieveResult{}, err
 	}
 
@@ -79,34 +76,30 @@ func (ns *NameRegistryState) Retrieve(conn *client.Client, nameAccountKey common
 
 }
 
-func (ns *NameRegistryState) RetrieveBatch(conn *client.Client, nameAccountKeys []common.PublicKey) ([]NameRegistryState, error) {
-	var (
-		nameAccounts []client.AccountInfo
-		err          error
-	)
+func (ns *NameRegistryState) RetrieveBatch(rpcClient *rpc.Client, nameAccountKeys []solana.PublicKey) ([]*NameRegistryState, error) {
+	const batchSize = 100
+	nameAccounts := make([]*NameRegistryState, 0, len(nameAccountKeys))
 
-	container := make([]string, 0, len(nameAccountKeys))
-	for i := 0; i < len(nameAccountKeys); i++ {
-		container = append(container, nameAccountKeys[i].ToBase58())
-	}
-
-	if nameAccounts, err = conn.GetMultipleAccounts(context.Background(), container); err != nil {
-		return nil, err
-	}
-
-	container2 := make([]NameRegistryState, 0, len(nameAccountKeys))
-
-	for i := 0; i < len(nameAccounts); i++ {
-
-		if reflect.ValueOf(nameAccounts[i]).IsZero() {
-			return nil, ErrAccountDoesNotExist
+	for i := 0; i < len(nameAccountKeys); i += batchSize {
+		end := i + batchSize
+		if end > len(nameAccountKeys) {
+			end = len(nameAccountKeys)
 		}
-		if err = ns.deserialize(nameAccounts[i].Data); err != nil {
+
+		batchKeys := nameAccountKeys[i:end]
+		out, err := rpcClient.GetMultipleAccounts(context.Background(), batchKeys...)
+		if err != nil {
 			return nil, err
 		}
+		for i := 0; i < len(out.Value); i++ {
+			if err := ns.deserialize(out.Value[i].Data.GetBinary()); err != nil {
+				nameAccounts[i] = nil
+				continue
+			}
+			nameAccounts[i] = ns
+		}
 
-		container2 = append(container2, *ns)
 	}
 
-	return container2, nil
+	return nameAccounts, nil
 }

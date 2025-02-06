@@ -2,59 +2,42 @@ package spl_name_services
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
-	"github.com/blocto/solana-go-sdk/client"
-	"github.com/blocto/solana-go-sdk/common"
-	"github.com/blocto/solana-go-sdk/program/token"
-	"github.com/blocto/solana-go-sdk/rpc"
+	bin "github.com/gagliardetto/binary"
+	"github.com/gagliardetto/solana-go"
+	"github.com/gagliardetto/solana-go/programs/token"
+	"github.com/gagliardetto/solana-go/rpc"
 )
 
-// getMint returns the mint account for the given address. This function is the equivalent of the
-// solana web3js function `getMint` and `unpackMint` in the solana web3js library.
-// The function can returned these name errors: errTokenAccountNotFound, errTokenInvalidAccountOwner, errTokenInvalidAccountSize,
-// which can be ignored.
-/*
-	mint := someFuncCall()
+func getMint(rpcClient *rpc.Client, address solana.PublicKey, commitment rpc.CommitmentType, programId solana.PublicKey) (token.Mint, error) {
+	resp, err := rpcClient.GetAccountInfoWithOpts(context.Background(), address, &rpc.GetAccountInfoOpts{
+		Commitment: commitment,
+	})
 
-	mintInfo, err := getMint(conn, mint, NoCommitmentArg, NoPublickKeyArg)
 	if err != nil {
-		if errors.Is(err, ErrTokenAccountNotFound) || 
-			errors.Is(err, ErrTokenInvalidAccountOwner) || 
-			errors.Is(err, ErrTokenInvalidAccountSize) {
-			
-				return mint, ErrIgnored
-		}
-		return common.PublicKey{}, err
-	}
-*/
-// This is due to accounting for the error throwing of Javascript which does not neccesarilly halt program execution.
-func getMint(rpcClient *client.Client, address common.PublicKey, commitment rpc.Commitment, programId common.PublicKey) (token.MintAccount, error) {
-	mintAccountInfo, err := rpcClient.GetAccountInfo(context.Background(), address.ToBase58())
-	if err != nil {
-		return token.MintAccount{}, err
+		return token.Mint{}, err
 	}
 
-	if reflect.ValueOf(mintAccountInfo).IsZero() {
-		return token.MintAccount{}, ErrTokenAccountNotFound
+	fmt.Println("could panic")
+	if reflect.ValueOf(resp).IsZero() {
+		return token.Mint{}, ErrTokenAccountNotFound
+	}
+	fmt.Println("did not panic")
+
+	if programId.IsZero() {
+		programId = solana.TokenProgramID
 	}
 
-	if programId == NoPublickKeyArg {
-		programId = TOKEN_PROGRAM_ID
+	if !resp.Value.Owner.Equals(programId) {
+		return token.Mint{}, ErrTokenInvalidAccountOwner
 	}
 
-	if !IsPublicKeyEqual(mintAccountInfo.Owner, programId) {
-		return token.MintAccount{}, ErrTokenInvalidAccountOwner
+	var mint token.Mint
+	if err = bin.NewBinDecoder(resp.GetBinary()).Decode(&mint); err != nil {
+		return token.Mint{}, err
 	}
 
-	if len(mintAccountInfo.Data) < token.MintAccountSize {
-		return token.MintAccount{}, ErrTokenInvalidAccountSize
-	}
-
-	mintAccount, err := token.MintAccountFromData(mintAccountInfo.Data)
-	if err != nil {
-		return token.MintAccount{}, err
-	}
-
-	return mintAccount, nil
+	return mint, nil
 }
