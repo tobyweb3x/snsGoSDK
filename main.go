@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	spl "snsGoSDK/internal/spl-name-services"
+	spl "snsGoSDK/spl-name-services"
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
@@ -30,9 +30,9 @@ func main() {
 			fmt.Printf("GetDomainKeySync --> %+v\n\n", res)
 		}
 
-		rpcClient := createConnection("https://mainnet.helius-rpc.com/?api-key=13af3657-7609-4ede-9305-6ea6c7a2243f")
+		conn := createConnection("https://mainnet.helius-rpc.com/?api-key=13af3657-7609-4ede-9305-6ea6c7a2243f")
 
-		reverseLookUPStr, err := spl.ReverseLookup(rpcClient, res.PubKey, solana.PublicKey{})
+		reverseLookUPStr, err := spl.ReverseLookup(conn, res.PubKey, solana.PublicKey{})
 		if err != nil {
 			fmt.Println(err)
 		} else {
@@ -40,23 +40,23 @@ func main() {
 		}
 
 		var nm spl.NameRegistryState
-		res2, err := nm.Retrieve(rpcClient, res.PubKey)
+		res2, err := nm.Retrieve(conn, res.PubKey)
 		if err != nil {
 			fmt.Println(err)
 		} else {
 			fmt.Printf("nm.Retrieve --> %+v, %+v\n", *res2.Registry, res2.NftOwner)
 			// if v == "bonfida.sol" { // if you loop here, it sorta complains about two many requests, rate limiting
-			// 	testGetAllDomains(rpcClient, res2.Registry.Owner)
-			// 	testGetDomainKeysWithReverses(rpcClient, res2.Registry.Owner)
+			// 	testGetAllDomains(conn, res2.Registry.Owner)
+			// 	testGetDomainKeysWithReverses(conn, res2.Registry.Owner)
 		}
 
-		// a, err := spl.GetAllDomains(rpcClient, res2.Registry.Owner)
+		// a, err := spl.GetAllDomains(conn, res2.Registry.Owner)
 		// if err != nil {
 		// 	fmt.Println(err)
 		// }
 		// fmt.Println(a, len(a))
 
-		// b, err := spl.GetAllRegisteredDomain(rpcClient)
+		// b, err := spl.GetAllRegisteredDomain(conn)
 		// if err != nil {
 		// 	fmt.Println(err)
 		// }
@@ -66,7 +66,7 @@ func main() {
 
 	fmt.Printf("\n\n")
 	// for _, v := range []string{"@oluwatobialone"} {
-	// 	testTwitterResolving(rpcClient, v)
+	// 	testTwitterResolving(conn, v)
 	// }
 
 }
@@ -76,8 +76,8 @@ func createConnection(connType string) *rpc.Client {
 	return rpc.New(connType)
 }
 
-// func testTwitterResolving(rpcClient *rpc.Client, twitterHandle string) {
-// 	a, err := twitter.GetTwitterRegistry(rpcClient, twitterHandle)
+// func testTwitterResolving(conn *rpc.Client, twitterHandle string) {
+// 	a, err := twitter.GetTwitterRegistry(conn, twitterHandle)
 // 	if err != nil {
 // 		fmt.Printf("Error: twitter.GetTwitterRegistry for handle %s: %v", twitterHandle, err)
 // 		return
@@ -85,7 +85,7 @@ func createConnection(connType string) *rpc.Client {
 
 // 	fmt.Printf("Public Wallet address associated to the Twitter handle %s ----> %s\n", twitterHandle, a.Registry.Owner.String())
 
-// 	b, c, err := twitter.GetHandleAndRegistryKey(rpcClient, a.Registry.Owner)
+// 	b, c, err := twitter.GetHandleAndRegistryKey(conn, a.Registry.Owner)
 // 	if err != nil {
 // 		fmt.Printf("Error: twitter.GetHandleAndRegistryKey for handle %s: %v", twitterHandle, err)
 // 		return

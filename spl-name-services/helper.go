@@ -11,8 +11,8 @@ import (
 	"github.com/gagliardetto/solana-go/rpc"
 )
 
-func getMint(rpcClient *rpc.Client, address solana.PublicKey, commitment rpc.CommitmentType, programId solana.PublicKey) (token.Mint, error) {
-	resp, err := rpcClient.GetAccountInfoWithOpts(context.Background(), address, &rpc.GetAccountInfoOpts{
+func getMint(conn *rpc.Client, address solana.PublicKey, commitment rpc.CommitmentType, programId solana.PublicKey) (token.Mint, error) {
+	resp, err := conn.GetAccountInfoWithOpts(context.Background(), address, &rpc.GetAccountInfoOpts{
 		Commitment: commitment,
 	})
 
@@ -35,7 +35,7 @@ func getMint(rpcClient *rpc.Client, address solana.PublicKey, commitment rpc.Com
 	}
 
 	var mint token.Mint
-	if err = bin.NewBinDecoder(resp.GetBinary()).Decode(&mint); err != nil {
+	if err = bin.NewBinDecoder(resp.Bytes()).Decode(&mint); err != nil {
 		return token.Mint{}, err
 	}
 

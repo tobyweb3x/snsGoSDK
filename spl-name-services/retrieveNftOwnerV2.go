@@ -11,14 +11,14 @@ import (
 	"github.com/gagliardetto/solana-go/rpc/jsonrpc"
 )
 
-func retrieveNftOwnerV2(rpcClient *rpc.Client, nameAccount solana.PublicKey) (solana.PublicKey, error) {
+func retrieveNftOwnerV2(conn *rpc.Client, nameAccount solana.PublicKey) (solana.PublicKey, error) {
 
 	mint, err := getDomainMint(nameAccount)
 	if err != nil {
 		return solana.PublicKey{}, err
 	}
 
-	out, err := rpcClient.GetTokenLargestAccounts(context.TODO(), mint, rpc.CommitmentConfirmed)
+	out, err := conn.GetTokenLargestAccounts(context.TODO(), mint, rpc.CommitmentConfirmed)
 	if err != nil {
 		var outErr *jsonrpc.RPCError
 		if errors.As(err, &outErr) && outErr.Code == -32602 { // Mint does not exist
@@ -31,13 +31,13 @@ func retrieveNftOwnerV2(rpcClient *rpc.Client, nameAccount solana.PublicKey) (so
 		return solana.PublicKey{}, errors.New("no accounts found")
 	}
 
-	largestAccountInfo, err := rpcClient.GetAccountInfo(context.Background(), out.Value[0].Address)
+	largestAccountInfo, err := conn.GetAccountInfo(context.Background(), out.Value[0].Address)
 	if err != nil {
 		return solana.PublicKey{}, err
 	}
 
 	var mintInfo token.Mint
-	if err := bin.NewBinDecoder(largestAccountInfo.GetBinary()).Decode(&mint); err != nil {
+	if err := bin.NewBinDecoder(largestAccountInfo.Bytes()).Decode(&mint); err != nil {
 		return solana.PublicKey{}, err
 	}
 

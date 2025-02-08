@@ -1,13 +1,13 @@
 package twitter
 
 import (
-	spl "snsGoSDK/internal/spl-name-services"
+	spl "snsGoSDK/spl-name-services"
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
 )
 
-func GetHandleAndRegistryKey(rpcClient *rpc.Client, verifiedPubkey solana.PublicKey) (solana.PublicKey, string, error) {
+func GetHandleAndRegistryKey(conn *rpc.Client, verifiedPubkey solana.PublicKey) (solana.PublicKey, string, error) {
 
 	hashedVerifiedPubkey := spl.GetHashedNameSync(verifiedPubkey.String())
 	reverseRegistryKey, _, err := spl.GetNameAccountKeySync(
@@ -20,7 +20,7 @@ func GetHandleAndRegistryKey(rpcClient *rpc.Client, verifiedPubkey solana.Public
 	}
 
 	var rt ReverseTwitterRegistryState
-	if err = rt.Retrieve(rpcClient, reverseRegistryKey); err != nil {
+	if err = rt.Retrieve(conn, reverseRegistryKey); err != nil {
 		return solana.PublicKey{}, "", err
 	}
 

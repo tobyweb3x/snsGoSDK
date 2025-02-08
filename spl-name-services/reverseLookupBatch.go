@@ -5,7 +5,7 @@ import (
 	"github.com/gagliardetto/solana-go/rpc"
 )
 
-func ReverseLookUpBatch(rpcClient *rpc.Client, nameAccounts []solana.PublicKey) ([]string, error) {
+func ReverseLookUpBatch(conn *rpc.Client, nameAccounts []solana.PublicKey) ([]string, error) {
 
 	reverseLookupAccounts := make([]solana.PublicKey, 0, len(nameAccounts))
 	for i := 0; i < len(nameAccounts); i++ {
@@ -18,7 +18,7 @@ func ReverseLookUpBatch(rpcClient *rpc.Client, nameAccounts []solana.PublicKey) 
 	}
 
 	var ns NameRegistryState
-	names, err := ns.RetrieveBatch(rpcClient, reverseLookupAccounts)
+	names, err := ns.RetrieveBatch(conn, reverseLookupAccounts)
 	if err != nil {
 		return nil, err
 	}

@@ -8,9 +8,9 @@ import (
 )
 
 // GetAllDomains can be used to retrieve all domain names owned by `wallet`.
-func GetAllDomains(rpcClient *rpc.Client, wallet solana.PublicKey) ([]solana.PublicKey, error) {
+func GetAllDomains(conn *rpc.Client, wallet solana.PublicKey) ([]solana.PublicKey, error) {
 	var zero uint64 = 0
-	out, err := rpcClient.GetProgramAccountsWithOpts(context.Background(),
+	out, err := conn.GetProgramAccountsWithOpts(context.Background(),
 		NameProgramID,
 		&rpc.GetProgramAccountsOpts{
 			DataSlice: &rpc.DataSlice{
@@ -41,6 +41,6 @@ func GetAllDomains(rpcClient *rpc.Client, wallet solana.PublicKey) ([]solana.Pub
 	for i := 0; i < len(out); i++ {
 		container = append(container, out[i].Pubkey)
 	}
-	
+
 	return container, nil
 }

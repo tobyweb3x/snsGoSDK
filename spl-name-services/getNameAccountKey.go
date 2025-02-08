@@ -4,9 +4,9 @@ import (
 	"github.com/gagliardetto/solana-go"
 )
 
-func GetNameAccountKeySync(hashed256Name []byte, nameClass, nameParent solana.PublicKey) (solana.PublicKey, uint8, error) {
+func GetNameAccountKeySync(hashedName []byte, nameClass, nameParent solana.PublicKey) (solana.PublicKey, uint8, error) {
 	var seeds [][]byte
-	seeds = append(seeds, hashed256Name)
+	seeds = append(seeds, hashedName)
 
 	if nameClass == NoPublickKeyArg {
 		seeds = append(seeds, make([]byte, 32))

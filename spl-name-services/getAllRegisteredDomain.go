@@ -6,9 +6,9 @@ import (
 	"github.com/gagliardetto/solana-go/rpc"
 )
 
-func GetAllRegisteredDomain(rpcClient *rpc.Client) (rpc.GetProgramAccountsResult, error) {
+func GetAllRegisteredDomain(conn *rpc.Client) (rpc.GetProgramAccountsResult, error) {
 	var thirtyTwo uint64 = 32
-	out, err := rpcClient.GetProgramAccountsWithOpts(context.Background(),
+	out, err := conn.GetProgramAccountsWithOpts(context.Background(),
 		NameProgramID,
 		&rpc.GetProgramAccountsOpts{
 			DataSlice: &rpc.DataSlice{

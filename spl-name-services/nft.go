@@ -25,11 +25,11 @@ if nftOwner, err = RetrieveNftOwner(conn, nameAccountKey); err != nil {
 // 	)
 
 // 	seeds := [][]byte{
-// 		MINT_PREFIX,
+// 		MIntPrefix,
 // 		nameAccount.Bytes(),
 // 	}
 
-// 	if mint, _, err = solana.FindProgramAddress(seeds, NAME_TOKENIZER_ID); err != nil {
+// 	if mint, _, err = solana.FindProgramAddress(seeds, NameTokenizerID); err != nil {
 // 		return solana.PublicKey{}, err
 // 	}
 
@@ -66,7 +66,7 @@ if nftOwner, err = RetrieveNftOwner(conn, nameAccountKey); err != nil {
 // 		},
 // 	}
 
-// 	if result, err = conn.RpcClient.GetProgramAccountsWithConfig(context.Background(), TOKEN_PROGRAM_ID.ToBase58(), filter); err != nil {
+// 	if result, err = conn.conn.GetProgramAccountsWithConfig(context.Background(), TOKEN_PROGRAM_ID.ToBase58(), filter); err != nil {
 // 		return solana.PublicKey{}, err
 // 	}
 
