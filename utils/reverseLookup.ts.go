@@ -1,6 +1,8 @@
-package spl_name_services
+package utils
 
 import (
+	spl "snsGoSDK/spl"
+
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
 )
@@ -13,10 +15,10 @@ func ReverseLookup(conn *rpc.Client, nameAccount, parent solana.PublicKey) (stri
 		return "", err
 	}
 
-	var nm NameRegistryState
+	var nm spl.NameRegistryState
 	registry, err := nm.Retrieve(conn, reverseLookupAccount)
 	if err != nil {
-		return "", NewSNSError(NoAccountData, "The registry data is empty", err)
+		return "", spl.NewSNSError(spl.NoAccountData, "The registry data is empty", err)
 	}
 
 	return deserializeReverse(registry.Registry.Data, parent.IsZero())

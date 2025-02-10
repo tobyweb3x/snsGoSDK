@@ -1,14 +1,15 @@
 package twitter
 
 import (
-	spl "snsGoSDK/spl-name-services"
+	spl "snsGoSDK/spl"
+	utils "snsGoSDK/utils"
 
 	"github.com/gagliardetto/solana-go"
 )
 
 func getTwitterRegistryKey(twitterHandle string) (solana.PublicKey, error) {
-	hashedTwitterHandle := spl.GetHashedNameSync(twitterHandle)
-	out, _, err := spl.GetNameAccountKeySync(
+	hashedTwitterHandle := utils.GetHashedNameSync(twitterHandle)
+	out, _, err := utils.GetNameAccountKeySync(
 		hashedTwitterHandle,
 		solana.PublicKey{},
 		spl.TwitterRootParentRegistryKey)

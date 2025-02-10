@@ -1,4 +1,4 @@
-package spl_name_services
+package utils
 
 import (
 	"errors"

@@ -2,7 +2,8 @@ package bindings
 
 import (
 	"snsGoSDK/instructions"
-	spl "snsGoSDK/spl-name-services"
+	spl "snsGoSDK/spl"
+	utils "snsGoSDK/utils"
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
@@ -14,8 +15,8 @@ func deleteNameRegistry(
 	refundTargetKey, nameClass, mameParent solana.PublicKey,
 ) (*solana.GenericInstruction, error) {
 
-	hashedNamed := spl.GetHashedNameSync(name)
-	nameAccountKey, _, err := spl.GetNameAccountKeySync(
+	hashedNamed := utils.GetHashedNameSync(name)
+	nameAccountKey, _, err := utils.GetNameAccountKeySync(
 		hashedNamed,
 		nameClass,
 		mameParent,

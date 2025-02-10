@@ -1,7 +1,8 @@
 package twitter
 
 import (
-	spl "snsGoSDK/spl-name-services"
+	spl "snsGoSDK/spl"
+	utils "snsGoSDK/utils"
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
@@ -9,8 +10,8 @@ import (
 
 func GetHandleAndRegistryKey(conn *rpc.Client, verifiedPubkey solana.PublicKey) (solana.PublicKey, string, error) {
 
-	hashedVerifiedPubkey := spl.GetHashedNameSync(verifiedPubkey.String())
-	reverseRegistryKey, _, err := spl.GetNameAccountKeySync(
+	hashedVerifiedPubkey := utils.GetHashedNameSync(verifiedPubkey.String())
+	reverseRegistryKey, _, err := utils.GetNameAccountKeySync(
 		hashedVerifiedPubkey,
 		spl.TwittwrVerificationAuthority,
 		spl.TwitterRootParentRegistryKey,

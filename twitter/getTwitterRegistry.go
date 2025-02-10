@@ -3,8 +3,10 @@ package twitter
 import (
 	"strings"
 
-	spl "snsGoSDK/spl-name-services"
+	spl "snsGoSDK/spl"
+	utils "snsGoSDK/utils"
 
+	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
 )
 
@@ -12,10 +14,10 @@ func GetTwitterRegistry(conn *rpc.Client, twitterHandle string) (spl.RetrieveRes
 
 	twitterHandle = strings.TrimPrefix(twitterHandle, "@")
 
-	hashedTwitterHandle := spl.GetHashedNameSync(twitterHandle)
-	twitterHandleRegistryKey, _, err := spl.GetNameAccountKeySync(
+	hashedTwitterHandle := utils.GetHashedNameSync(twitterHandle)
+	twitterHandleRegistryKey, _, err := utils.GetNameAccountKeySync(
 		hashedTwitterHandle,
-		spl.NoPublickKeyArg,
+		solana.PublicKey{},
 		spl.TwitterRootParentRegistryKey,
 	)
 	if err != nil {

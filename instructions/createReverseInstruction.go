@@ -32,13 +32,13 @@ func (cri *CreateReverseInstruction) GetInstruction(
 	centralState,
 	feePayer,
 	rentSysvar solana.PublicKey,
-	parentName *solana.PublicKey,
-	parentNameOwner *solana.PublicKey,
-) *solana.GenericInstruction {
+	parentName solana.PublicKey,
+	parentNameOwner solana.PublicKey,
+) (*solana.GenericInstruction, error) {
 
 	data, err := cri.Serialize()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var dataBuffer bytes.Buffer
@@ -54,17 +54,17 @@ func (cri *CreateReverseInstruction) GetInstruction(
 		{PublicKey: rentSysvar, IsSigner: false, IsWritable: false},
 	}
 
-	if parentName != nil {
-		keys = append(keys, &solana.AccountMeta{PublicKey: *parentName, IsSigner: false, IsWritable: true})
+	if !parentName.IsZero() {
+		keys = append(keys, &solana.AccountMeta{PublicKey: parentName, IsSigner: false, IsWritable: true})
 	}
 
-	if parentNameOwner != nil {
-		keys = append(keys, &solana.AccountMeta{PublicKey: *parentNameOwner, IsSigner: true, IsWritable: true})
+	if !parentNameOwner.IsZero() {
+		keys = append(keys, &solana.AccountMeta{PublicKey: parentNameOwner, IsSigner: true, IsWritable: true})
 	}
 
 	return solana.NewInstruction(
 		programId,
 		keys,
 		dataBuffer.Bytes(),
-	)
+	), nil
 }

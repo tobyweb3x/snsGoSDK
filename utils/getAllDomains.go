@@ -1,7 +1,9 @@
-package spl_name_services
+package utils
 
 import (
 	"context"
+
+	spl "snsGoSDK/spl"
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
@@ -11,7 +13,7 @@ import (
 func GetAllDomains(conn *rpc.Client, wallet solana.PublicKey) ([]solana.PublicKey, error) {
 	var zero uint64 = 0
 	out, err := conn.GetProgramAccountsWithOpts(context.Background(),
-		NameProgramID,
+		spl.NameProgramID,
 		&rpc.GetProgramAccountsOpts{
 			DataSlice: &rpc.DataSlice{
 				Offset: &zero,
@@ -27,7 +29,7 @@ func GetAllDomains(conn *rpc.Client, wallet solana.PublicKey) ([]solana.PublicKe
 				{
 					Memcmp: &rpc.RPCFilterMemcmp{
 						Offset: 0,
-						Bytes:  RootDomainAccount.Bytes(),
+						Bytes:  spl.RootDomainAccount.Bytes(),
 					},
 				},
 			},

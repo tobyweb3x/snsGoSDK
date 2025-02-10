@@ -1,7 +1,9 @@
-package spl_name_services
+package utils
 
 import (
 	"context"
+
+	spl "snsGoSDK/spl"
 
 	"github.com/gagliardetto/solana-go/rpc"
 )
@@ -9,7 +11,7 @@ import (
 func GetAllRegisteredDomain(conn *rpc.Client) (rpc.GetProgramAccountsResult, error) {
 	var thirtyTwo uint64 = 32
 	out, err := conn.GetProgramAccountsWithOpts(context.Background(),
-		NameProgramID,
+		spl.NameProgramID,
 		&rpc.GetProgramAccountsOpts{
 			DataSlice: &rpc.DataSlice{
 				Offset: &thirtyTwo,
@@ -19,7 +21,7 @@ func GetAllRegisteredDomain(conn *rpc.Client) (rpc.GetProgramAccountsResult, err
 				{
 					Memcmp: &rpc.RPCFilterMemcmp{
 						Offset: 0,
-						Bytes:  RootDomainAccount.Bytes(),
+						Bytes:  spl.RootDomainAccount.Bytes(),
 					},
 				},
 			},

@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	spl "snsGoSDK/spl-name-services"
+	spl "snsGoSDK/spl"
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"

@@ -1,16 +1,20 @@
-package spl_name_services
+package utils
 
-import "github.com/gagliardetto/solana-go"
+import (
+	spl "snsGoSDK/spl"
+
+	"github.com/gagliardetto/solana-go"
+)
 
 func GetReverseKeyFromDomainkey(domainKey, parent solana.PublicKey) (solana.PublicKey, error) {
 	hashedReverseLookup := GetHashedNameSync(domainKey.String())
 	reverseLookupAccount, _, err := GetNameAccountKeySync(
 		hashedReverseLookup,
-		REVERSE_LOOKUP_CLASS,
+		spl.ReverseLookupClass,
 		parent)
 
 	if err != nil {
-		return NoPublickKeyArg, err
+		return solana.PublicKey{}, err
 	}
 	return reverseLookupAccount, nil
 }

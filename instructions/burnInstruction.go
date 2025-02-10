@@ -11,10 +11,6 @@ type BurnInstruction struct {
 	Tag uint8
 }
 
-func (bi *BurnInstruction) Serialize() ([]byte, error) {
-	return borsh.Serialize(*bi)
-}
-
 func NewBurnInstruction() *BurnInstruction {
 	return &BurnInstruction{
 		Tag: 16,
@@ -34,7 +30,7 @@ func (bi *BurnInstruction) GetInstruction(
 	target solana.PublicKey,
 ) *solana.GenericInstruction {
 
-	data, err := bi.Serialize()
+	data, err := borsh.Serialize(*bi)
 	if err != nil {
 		panic(err)
 	}

@@ -1,6 +1,8 @@
-package spl_name_services
+package utils
 
 import (
+	spl "snsGoSDK/spl"
+
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
 )
@@ -10,14 +12,14 @@ func ReverseLookUpBatch(conn *rpc.Client, nameAccounts []solana.PublicKey) ([]st
 	reverseLookupAccounts := make([]solana.PublicKey, 0, len(nameAccounts))
 	for i := 0; i < len(nameAccounts); i++ {
 		hashedReverseLookup := GetHashedNameSync(nameAccounts[i].String())
-		reverseLookupAccount, _, err := GetNameAccountKeySync(hashedReverseLookup, REVERSE_LOOKUP_CLASS, NoPublickKeyArg)
+		reverseLookupAccount, _, err := GetNameAccountKeySync(hashedReverseLookup, spl.ReverseLookupClass, solana.PublicKey{})
 		if err != nil {
 			return nil, err
 		}
 		reverseLookupAccounts = append(reverseLookupAccounts, reverseLookupAccount)
 	}
 
-	var ns NameRegistryState
+	var ns spl.NameRegistryState
 	names, err := ns.RetrieveBatch(conn, reverseLookupAccounts)
 	if err != nil {
 		return nil, err
