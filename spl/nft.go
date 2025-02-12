@@ -1,4 +1,4 @@
-package spl_name_services
+package spl
 
 // RetrieveNftOwner returns the publicKey associated with the nameAccount parameter. It returns
 // named errors: ErrIgnored and ErrZeroMintSupply, which can be ignored.

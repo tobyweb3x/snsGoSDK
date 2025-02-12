@@ -32,7 +32,7 @@ func ReverseLookUpBatch(conn *rpc.Client, nameAccounts []solana.PublicKey) ([]st
 			continue
 		}
 
-		d, err := deserializeReverse(names[i].Data, false)
+		d, err := DeserializeReverse(names[i].Data, false)
 		if err != nil {
 			return nil, err
 		}

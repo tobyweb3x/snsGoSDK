@@ -22,11 +22,5 @@ func GetNameAccountKeySync(hashedName []byte, nameClass, nameParent solana.Publi
 		seeds = append(seeds, nameParent.Bytes())
 	}
 
-	nameAccountKey, nonce, err := solana.FindProgramAddress(seeds, spl.NameProgramID)
-
-	if err != nil {
-		return solana.PublicKey{}, nonce, err
-	}
-
-	return nameAccountKey, nonce, nil
+	return solana.FindProgramAddress(seeds, spl.NameProgramID)
 }

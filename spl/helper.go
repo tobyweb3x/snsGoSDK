@@ -1,43 +1,38 @@
-package spl_name_services
+package spl
 
 import (
-	"context"
-	"fmt"
-	"reflect"
+	"errors"
 
-	bin "github.com/gagliardetto/binary"
 	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/programs/token"
-	"github.com/gagliardetto/solana-go/rpc"
 )
 
-func getMint(conn *rpc.Client, address solana.PublicKey, commitment rpc.CommitmentType, programId solana.PublicKey) (token.Mint, error) {
-	resp, err := conn.GetAccountInfoWithOpts(context.Background(), address, &rpc.GetAccountInfoOpts{
-		Commitment: commitment,
-	})
+func GetAssociatedTokenAddressSync(
+	mint, owner solana.PublicKey,
+	allowOwnerOffCurve bool,
+	programId, associatedTokenProgramId solana.PublicKey,
+) (solana.PublicKey, error) {
 
-	if err != nil {
-		return token.Mint{}, err
+	if !allowOwnerOffCurve && !solana.IsOnCurve(owner.Bytes()) {
+		return solana.PublicKey{}, errors.New("token owner is off-curve")
 	}
 
-	fmt.Println("could panic")
-	if reflect.ValueOf(resp).IsZero() {
-		return token.Mint{}, ErrTokenAccountNotFound
+	if associatedTokenProgramId.IsZero() {
+		associatedTokenProgramId = solana.SPLAssociatedTokenAccountProgramID
 	}
-	fmt.Println("did not panic")
 
 	if programId.IsZero() {
 		programId = solana.TokenProgramID
 	}
 
-	if !resp.Value.Owner.Equals(programId) {
-		return token.Mint{}, ErrTokenInvalidAccountOwner
+	seed := [][]byte{
+		owner.Bytes(),
+		programId.Bytes(),
+		mint.Bytes(),
+	}
+	address, _, err := solana.FindProgramAddress(seed, associatedTokenProgramId)
+	if err != nil {
+		return solana.PublicKey{}, err
 	}
 
-	var mint token.Mint
-	if err = bin.NewBinDecoder(resp.Bytes()).Decode(&mint); err != nil {
-		return token.Mint{}, err
-	}
-
-	return mint, nil
+	return address, nil
 }

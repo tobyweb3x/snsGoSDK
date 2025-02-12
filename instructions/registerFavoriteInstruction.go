@@ -19,7 +19,7 @@ func NewRegisterFavoriteInstruction() *RegisterFavoriteInstruction {
 	}
 }
 
-func (rf *RegisterFavoriteInstruction) getInstruction(
+func (rf *RegisterFavoriteInstruction) GetInstruction(
 	programId,
 	nameAccount,
 	favouriteAccount,

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func deserializeReverse(data []byte, trimFirstNullByte bool) (string, error) {
+func DeserializeReverse(data []byte, trimFirstNullByte bool) (string, error) {
 
 	if len(data) == 0 {
 		return "", errors.New("data is empty")

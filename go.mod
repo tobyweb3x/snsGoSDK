@@ -1,6 +1,6 @@
 module snsGoSDK
 
-go 1.21.4
+go 1.23.3
 
 require (
 	github.com/btcsuite/btcutil v1.0.2
@@ -8,6 +8,7 @@ require (
 	github.com/gagliardetto/solana-go v1.12.0
 	github.com/near/borsh-go v0.3.2-0.20220516180422-1ff87d108454
 	golang.org/x/net v0.34.0
+	golang.org/x/sync v0.10.0
 )
 
 require (

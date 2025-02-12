@@ -23,7 +23,7 @@ func NewCreateWithNFTInstruction(name string, space uint32) *CreateWithNFTInstru
 	}
 }
 
-func (rf *CreateWithNFTInstruction) getInstruction(
+func (rf *CreateWithNFTInstruction) GetInstruction(
 	programId,
 	namingServiceProgram,
 	rootDomain,

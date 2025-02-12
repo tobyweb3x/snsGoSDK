@@ -21,5 +21,5 @@ func ReverseLookup(conn *rpc.Client, nameAccount, parent solana.PublicKey) (stri
 		return "", spl.NewSNSError(spl.NoAccountData, "The registry data is empty", err)
 	}
 
-	return deserializeReverse(registry.Registry.Data, parent.IsZero())
+	return DeserializeReverse(registry.Registry.Data, parent.IsZero())
 }

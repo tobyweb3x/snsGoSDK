@@ -1,4 +1,4 @@
-package spl_name_services
+package spl
 
 import "github.com/gagliardetto/solana-go"
 

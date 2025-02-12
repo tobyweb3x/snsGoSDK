@@ -46,7 +46,7 @@ var RecordV1Size map[Record]uint8 = map[Record]uint8{
 type RecordVersion uint8
 
 const (
-	VersionUnspecified RecordVersion = 0
-	V1                 RecordVersion = 1
-	V2                 RecordVersion = 2
+	VersionUnspecified RecordVersion = iota
+	V1
+	V2
 )
