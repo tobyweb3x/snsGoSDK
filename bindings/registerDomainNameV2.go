@@ -122,7 +122,7 @@ func RegisterDomainNameV2(
 		return nil, err
 	}
 
-	ixTwo := instructions.NewCreateSplitV2Instruction(
+	ixTwo,err := instructions.NewCreateSplitV2Instruction(
 		name,
 		space,
 		referrerIdOpt,
@@ -145,6 +145,9 @@ func RegisterDomainNameV2(
 		derivedState,
 		&refTokenAccount,
 	)
+	if err != nil {
+		return nil, err
+	}
 
 	ixns = append(ixns, ixTwo)
 	return ixns, nil

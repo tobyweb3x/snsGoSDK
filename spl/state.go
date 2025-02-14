@@ -40,8 +40,8 @@ func (ns *NameRegistryState) Deserialize(data []byte) error {
 	ns.Owner = solana.PublicKeyFromBytes(schema.Owner[:])
 	ns.Class = solana.PublicKeyFromBytes(schema.Class[:])
 
-	if len(data) > HEADER_LEN {
-		ns.Data = data[HEADER_LEN:]
+	if len(data) > NameRegistryStateHeaderLen {
+		ns.Data = data[NameRegistryStateHeaderLen:]
 	}
 
 	return nil

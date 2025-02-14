@@ -45,11 +45,11 @@ func (cs *CreateSplitV2Instruction) GetInstruction(
 	rentSysvar,
 	state solana.PublicKey,
 	referrerAccountOpt *solana.PublicKey,
-) *solana.GenericInstruction {
+) (*solana.GenericInstruction, error) {
 
 	data, err := cs.Serialize()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var dataBuffer bytes.Buffer
@@ -81,5 +81,5 @@ func (cs *CreateSplitV2Instruction) GetInstruction(
 		programId,
 		keys,
 		dataBuffer.Bytes(),
-	)
+	), nil
 }

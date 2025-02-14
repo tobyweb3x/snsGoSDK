@@ -42,5 +42,5 @@ func BurnDomain(domain string, owner, target solana.PublicKey) (*solana.GenericI
 		spl.ReverseLookupClass,
 		owner,
 		target,
-	), nil
+	)
 }

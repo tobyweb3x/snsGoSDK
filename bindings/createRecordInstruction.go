@@ -32,7 +32,7 @@ func CreateRecordInstruction(
 	space := len(r)
 	lamport, err := conn.GetMinimumBalanceForRentExemption(
 		context.TODO(),
-		uint64(space+spl.HEADER_LEN),
+		uint64(space+spl.NameRegistryStateHeaderLen),
 		rpc.CommitmentConfirmed,
 	)
 	if err != nil {

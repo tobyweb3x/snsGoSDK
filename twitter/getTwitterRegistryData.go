@@ -47,5 +47,5 @@ func getTwitterRegistryKeyData(conn *rpc.Client, verifiedPubKey solana.PublicKey
 	}
 
 	dataBytes := filteredAccounts[0].Account.Data.GetBinary()
-	return dataBytes[spl.HEADER_LEN:], nil
+	return dataBytes[spl.NameRegistryStateHeaderLen:], nil
 }

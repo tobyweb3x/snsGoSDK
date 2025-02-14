@@ -4,7 +4,7 @@ import "github.com/gagliardetto/solana-go"
 
 const (
 	HashPrefix = "SPL Name Service"
-	HEADER_LEN = 96
+	NameRegistryStateHeaderLen = 96
 )
 
 var (

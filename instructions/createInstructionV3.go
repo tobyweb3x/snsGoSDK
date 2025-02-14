@@ -45,11 +45,11 @@ func (civ3 *CreateInstructionV3) GetInstruction(
 	rentSysvar,
 	state solana.PublicKey,
 	referrerAccountOpt *solana.PublicKey,
-) *solana.GenericInstruction {
+) (*solana.GenericInstruction, error) {
 
 	data, err := civ3.Serialize()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var dataBuffer bytes.Buffer
@@ -81,5 +81,5 @@ func (civ3 *CreateInstructionV3) GetInstruction(
 		programId,
 		keys,
 		dataBuffer.Bytes(),
-	)
+	), nil
 }

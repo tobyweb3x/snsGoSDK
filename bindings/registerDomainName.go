@@ -118,7 +118,7 @@ func RegisterDomainName(
 		return nil, err
 	}
 
-	ixTwo := instructions.NewCreateInstructionV3(
+	ixTwo, err := instructions.NewCreateInstructionV3(
 		name,
 		space,
 		referrerIdOpt,
@@ -141,6 +141,10 @@ func RegisterDomainName(
 		derivedState,
 		&referrerKey,
 	)
+
+	if err != nil {
+		return nil, err
+	}
 
 	ixns = append(ixns, ixTwo)
 	return ixns, nil

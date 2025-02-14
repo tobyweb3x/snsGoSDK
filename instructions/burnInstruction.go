@@ -28,11 +28,11 @@ func (bi *BurnInstruction) GetInstruction(
 	centralState,
 	owner,
 	target solana.PublicKey,
-) *solana.GenericInstruction {
+) (*solana.GenericInstruction, error) {
 
 	data, err := borsh.Serialize(*bi)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	var dataBuffer bytes.Buffer
@@ -54,5 +54,5 @@ func (bi *BurnInstruction) GetInstruction(
 		programId,
 		keys,
 		dataBuffer.Bytes(),
-	)
+	), nil
 }

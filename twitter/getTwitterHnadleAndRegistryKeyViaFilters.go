@@ -43,8 +43,8 @@ func getTwitterHandleAndRegistryKeyViaFilters(conn *rpc.Client, verifiedPubkey s
 	}
 
 	for _, account := range filteredAccounts {
-		if len(account.Account.Data.GetBinary()) > spl.HEADER_LEN+32 {
-			data := account.Account.Data.GetBinary()[spl.HEADER_LEN:]
+		if len(account.Account.Data.GetBinary()) > spl.NameRegistryStateHeaderLen+32 {
+			data := account.Account.Data.GetBinary()[spl.NameRegistryStateHeaderLen:]
 			var rt *ReverseTwitterRegistryState
 			if err = borsh.Deserialize(rt, data); err != nil {
 				return solana.PublicKey{}, "", err

@@ -1,6 +1,10 @@
 package snsRecord
 
-import "github.com/gagliardetto/solana-go"
+import (
+	"fmt"
+
+	"github.com/gagliardetto/solana-go"
+)
 
 var (
 	// SNSRecordsID is the mainnet program ID
@@ -17,7 +21,7 @@ func init() {
 	out, _, err := solana.FindProgramAddress(
 		[][]byte{SNSRecordsID.Bytes()}, SNSRecordsID)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("failed to init package snsRecord: %w", err))
 	}
 	CentralStateSNSRecords = out
 }

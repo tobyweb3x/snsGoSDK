@@ -3,12 +3,12 @@ package nft
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	bin "github.com/gagliardetto/binary"
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/programs/token"
 	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/gagliardetto/solana-go/rpc/jsonrpc"
 )
 
 func RetrieveNftOwnerV2(
@@ -26,6 +26,10 @@ func RetrieveNftOwnerV2(
 		rpc.CommitmentConfirmed,
 	)
 	if err != nil {
+		var outErr *jsonrpc.RPCError
+		if errors.As(err, &outErr) && outErr.Code == -32602 { // Mint does not exist
+			return solana.PublicKey{}, nil
+		}
 		return solana.PublicKey{}, err
 	}
 	if len(largestAccount.Value) == 0 {
@@ -46,7 +50,6 @@ func RetrieveNftOwnerV2(
 	}
 
 	if decoded.Amount == 1 {
-		fmt.Println("decoded owner", decoded.Owner)
 		return decoded.Owner, nil
 	}
 

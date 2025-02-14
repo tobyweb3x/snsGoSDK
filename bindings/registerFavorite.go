@@ -36,6 +36,6 @@ func RegisterFavorite(
 		owner,
 		solana.SystemProgramID,
 		parent,
-	), nil
+	)
 
 }

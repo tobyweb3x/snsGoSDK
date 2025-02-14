@@ -68,8 +68,7 @@ func Resolve(
 	if err != nil {
 		return solana.PublicKey{}, err
 	}
-
-	if len(out2.Value) <= 4 {
+	if len(out2.Value) < 4 {
 		return solana.PublicKey{}, errors.New("result list not complete")
 	}
 
@@ -89,7 +88,7 @@ func Resolve(
 	}
 
 	// If NFT record active -> NFT owner is the owner
-	if nftRecordInfo.Data != nil {
+	if nftRecordInfo != nil && nftRecordInfo.Data.GetBinary() != nil {
 		var nftRecord nft.NftRecord
 		if err := borsh.Deserialize(&nftRecord, nftRecordInfo.Data.GetBinary()); err != nil {
 			return solana.PublicKey{}, err
@@ -100,12 +99,13 @@ func Resolve(
 				return solana.PublicKey{},
 					spl.NewSNSError(spl.CouldNotFindNftOwner, "", err)
 			}
+
 			return nftOwner, nil
 		}
 	}
 
 	// Check SOL record V2
-	if solRecordV2Info.Data != nil {
+	if solRecordV2Info != nil && solRecordV2Info.Data.GetBinary() != nil {
 		var recordV2 snsRecord.Record
 		if err := recordV2.Deserialize(solRecordV2Info.Data.GetBinary()); err != nil {
 			return solana.PublicKey{}, err
@@ -151,10 +151,10 @@ func Resolve(
 	}
 
 	// Check SOL record V1
-	if solRecordV1Info.Data != nil &&
-		len(solRecordV1Info.Data.GetBinary()) > spl.HEADER_LEN+32 {
+	if solRecordV1Info != nil && solRecordV1Info.Data != nil &&
+		len(solRecordV1Info.Data.GetBinary()) > spl.NameRegistryStateHeaderLen+32 {
 		var expectedBuffer bytes.Buffer
-		expectedBuffer.Write(solRecordV1Info.Data.GetBinary()[spl.HEADER_LEN : spl.HEADER_LEN+32])
+		expectedBuffer.Write(solRecordV1Info.Data.GetBinary()[spl.NameRegistryStateHeaderLen : spl.NameRegistryStateHeaderLen+32])
 		expectedBuffer.Write(solRecordv1Key.Bytes())
 
 		expectedHex := hex.EncodeToString(expectedBuffer.Bytes())
@@ -162,12 +162,12 @@ func Resolve(
 
 		valid := record.CheckSolRecord(
 			expected,
-			solRecordV1Info.Data.GetBinary()[spl.HEADER_LEN+32:spl.HEADER_LEN+solana.SignatureLength],
+			solRecordV1Info.Data.GetBinary()[spl.NameRegistryStateHeaderLen+32:spl.NameRegistryStateHeaderLen+32+solana.SignatureLength],
 			registry.Owner,
 		)
 		if valid {
 			return solana.PublicKeyFromBytes(
-				solRecordV1Info.Data.GetBinary()[spl.HEADER_LEN : spl.HEADER_LEN+32],
+				solRecordV1Info.Data.GetBinary()[spl.NameRegistryStateHeaderLen : spl.NameRegistryStateHeaderLen+32],
 			), nil
 		}
 	}
@@ -204,7 +204,13 @@ func Resolve(
 				fmt.Sprintf("the Program %s is not allowed", ownerInfo.Value.Owner.String()),
 				nil,
 			)
+
 		}
+		return solana.PublicKey{}, spl.NewSNSError(
+			spl.PdaOwnerNotAllowed,
+			"the program is not allowed",
+			nil,
+		)
 	}
 
 	return registry.Owner, nil

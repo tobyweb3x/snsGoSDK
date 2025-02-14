@@ -40,11 +40,11 @@ func (rf *CreateWithNFTInstruction) GetInstruction(
 	splTokenProgram,
 	rentSysvar,
 	state,
-	mplTokenMetadata solana.PublicKey) *solana.GenericInstruction {
+	mplTokenMetadata solana.PublicKey) (*solana.GenericInstruction, error) {
 
 	data, err := rf.serialize()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	key := solana.AccountMetaSlice{
@@ -70,5 +70,5 @@ func (rf *CreateWithNFTInstruction) GetInstruction(
 		programId,
 		key,
 		data,
-	)
+	), nil
 }

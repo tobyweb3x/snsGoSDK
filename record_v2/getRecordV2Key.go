@@ -16,7 +16,7 @@ func GetRecordV2Key(domain string, record types.Record) (solana.PublicKey, error
 	}
 
 	hashed := utils.GetHashedNameSync(
-		fmt.Sprintf("\\x02.%s", string(record)),
+		fmt.Sprintf("\x02%s", string(record)),
 	)
 	out2, _, err := utils.GetNameAccountKeySync(
 		hashed,

@@ -21,25 +21,17 @@ func (e SNSError) Message() string {
 }
 
 func NewSNSError(errorType ErrorType, message string, err error) SNSError {
-	m := fmt.Errorf("%s: error : %s", message, err.Error())
+	var m error
+	if err == nil {
+		m = fmt.Errorf("%w: %s", errorType, message)
+	} else {
+		m = fmt.Errorf("%w: %s: %w", errorType, message, err)
+	}
 	return SNSError{
 		type_:   errorType,
 		message: m.Error(),
 	}
 }
-
-type TokenError error
-
-var (
-	//ErrTokenAccountNotFound: Thrown if an account is not found at the expected address, this error can be ignored.
-	ErrTokenAccountNotFound TokenError = fmt.Errorf("ErrTokenAccountNotFound")
-
-	//ErrTokenInvalidAccountOwner: Thrown if a program state account is not owned by the expected token program, this error can be ignored.
-	ErrTokenInvalidAccountOwner TokenError = fmt.Errorf("ErrTokenInvalidAccountOwner")
-
-	//ErrTokenInvalidAccountSize: Thrown if the byte length of an program state account doesn't match the expected size, this error can be ignored.
-	ErrTokenInvalidAccountSize TokenError = fmt.Errorf("ErrTokenInvalidAccountSize")
-)
 
 var (
 	// MintAccount has zero supply.

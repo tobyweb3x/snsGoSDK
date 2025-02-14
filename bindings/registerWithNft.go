@@ -47,5 +47,5 @@ func RegisterWithNft(
 		solana.SysVarRentPubkey,
 		state,
 		spl.MetaplexID,
-	), nil
+	)
 }

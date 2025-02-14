@@ -34,7 +34,7 @@ func CreateReverseTwitterRegistry(
 
 	lamport, err := conn.GetMinimumBalanceForRentExemption(
 		context.TODO(),
-		uint64(len(reverseTwitterRegistryStateBuff)+spl.HEADER_LEN),
+		uint64(len(reverseTwitterRegistryStateBuff)+spl.NameRegistryStateHeaderLen),
 		rpc.CommitmentConfirmed)
 	if err != nil {
 		return nil, err

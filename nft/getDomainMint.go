@@ -12,6 +12,6 @@ func GetDomainMint(domain solana.PublicKey) (solana.PublicKey, uint8, error) {
 			spl.MIntPrefix,
 			domain.Bytes(),
 		},
-		solana.SystemProgramID,
+		spl.NameTokenizerID,
 	)
 }

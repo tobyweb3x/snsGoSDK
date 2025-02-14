@@ -25,11 +25,11 @@ func (rf *RegisterFavoriteInstruction) GetInstruction(
 	favouriteAccount,
 	owner,
 	systemProgram,
-	optParent solana.PublicKey) *solana.GenericInstruction {
+	optParent solana.PublicKey) (*solana.GenericInstruction, error) {
 
 	data, err := rf.serialize()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	keys := solana.AccountMetaSlice{
@@ -47,5 +47,5 @@ func (rf *RegisterFavoriteInstruction) GetInstruction(
 		programId,
 		keys,
 		data,
-	)
+	), nil
 }

@@ -30,7 +30,7 @@ func CreateSubdomain(
 
 	lamports, err := conn.GetMinimumBalanceForRentExemption(
 		context.TODO(),
-		space+uint64(spl.HEADER_LEN),
+		space+uint64(spl.NameRegistryStateHeaderLen),
 		rpc.CommitmentConfirmed,
 	)
 	if err != nil {
