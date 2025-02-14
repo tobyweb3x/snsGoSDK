@@ -26,7 +26,7 @@ func (ns *NameRegistryState) HEADER_LEN() uint8 {
 	return ns.headerLen
 }
 
-func (ns *NameRegistryState) deserialize(data []byte) error {
+func (ns *NameRegistryState) Deserialize(data []byte) error {
 	var schema struct {
 		ParentName [32]byte
 		Owner      [32]byte
@@ -54,7 +54,7 @@ func (ns *NameRegistryState) Retrieve(conn *rpc.Client, nameAccountKey solana.Pu
 		return RetrieveResult{}, NewSNSError(AccountDoesNotExist, "The name account does not exist", err)
 	}
 
-	if err = ns.deserialize(nameAccount.Bytes()); err != nil {
+	if err = ns.Deserialize(nameAccount.Bytes()); err != nil {
 		return RetrieveResult{}, err
 	}
 
@@ -90,7 +90,7 @@ func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []s
 			return nil, err
 		}
 		for i := 0; i < len(out.Value); i++ {
-			if err := ns.deserialize(out.Value[i].Data.GetBinary()); err != nil {
+			if err := ns.Deserialize(out.Value[i].Data.GetBinary()); err != nil {
 				nameAccounts[i] = nil
 				continue
 			}
