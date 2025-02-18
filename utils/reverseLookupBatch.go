@@ -24,20 +24,21 @@ func ReverseLookUpBatch(conn *rpc.Client, nameAccounts []solana.PublicKey) ([]st
 	if err != nil {
 		return nil, err
 	}
-
 	container := make([]string, 0, len(names))
 	for i := 0; i < len(names); i++ {
-		if names[i].Data == nil {
+		if names[i] == nil {
 			container = append(container, "")
 			continue
 		}
 
 		d, err := DeserializeReverse(names[i].Data, false)
+
 		if err != nil {
 			return nil, err
 		}
 
 		container = append(container, d)
 	}
+
 	return container, nil
 }

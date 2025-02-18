@@ -25,9 +25,8 @@ func DeserializeReverse(data []byte, trimFirstNullByte bool) (string, error) {
 	nameStr := string(data[4 : 4+nameLength])
 
 	if trimFirstNullByte && len(nameStr) > 0 && strings.HasPrefix(nameStr, "\x00") {
-		nameStr = strings.Trim(nameStr, "\x00")
+		nameStr = strings.TrimPrefix(nameStr, "\x00")
 	}
 
 	return nameStr, nil
-
 }

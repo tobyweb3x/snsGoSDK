@@ -44,7 +44,7 @@ func CreateNameRegistry(
 		if err != nil {
 			return nil, err
 		}
-		nameParentOwner = out.NftOwner
+		nameParentOwner = out.Registry.Owner
 	}
 
 	return instructions.CreateInstruction(

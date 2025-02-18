@@ -9,6 +9,12 @@ import (
 	"github.com/near/borsh-go"
 )
 
+var schema struct {
+	ParentName [32]byte
+	Owner      [32]byte
+	Class      [32]byte
+}
+
 // RetrieveResult is a helper struct for NameRegistryState.Retrieve.
 type RetrieveResult struct {
 	Registry *NameRegistryState
@@ -27,11 +33,6 @@ func (ns *NameRegistryState) HEADER_LEN() uint8 {
 }
 
 func (ns *NameRegistryState) Deserialize(data []byte) error {
-	var schema struct {
-		ParentName [32]byte
-		Owner      [32]byte
-		Class      [32]byte
-	}
 	if err := borsh.Deserialize(&schema, data); err != nil {
 		return fmt.Errorf("borsch deserialization error: %w", err)
 	}
@@ -58,10 +59,6 @@ func (ns *NameRegistryState) Retrieve(conn *rpc.Client, nameAccountKey solana.Pu
 		return RetrieveResult{}, err
 	}
 
-	// if err := borsh.Deserialize(ns, nameAccount.Value.Data.Bytes()); err != nil {
-	// 	return RetrieveResult{},
-	// }
-
 	nftOwner, err := retrieveNftOwnerV2(conn, nameAccountKey)
 	if err != nil {
 		return RetrieveResult{}, err
@@ -75,8 +72,8 @@ func (ns *NameRegistryState) Retrieve(conn *rpc.Client, nameAccountKey solana.Pu
 }
 
 func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []solana.PublicKey) ([]*NameRegistryState, error) {
-	const batchSize = 100
-	nameAccounts := make([]*NameRegistryState, 0, len(nameAccountKeys))
+	var batchSize = 100
+	nameAccounts := make([]*NameRegistryState, len(nameAccountKeys))
 
 	for i := 0; i < len(nameAccountKeys); i += batchSize {
 		end := i + batchSize
@@ -90,13 +87,20 @@ func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []s
 			return nil, err
 		}
 		for i := 0; i < len(out.Value); i++ {
-			if err := ns.Deserialize(out.Value[i].Data.GetBinary()); err != nil {
+			value := out.Value[i]
+			if value == nil || value.Data == nil {
 				nameAccounts[i] = nil
 				continue
 			}
-			nameAccounts[i] = ns
-		}
 
+			var n = &NameRegistryState{}
+			if err := n.Deserialize(value.Data.GetBinary()); err != nil {
+				nameAccounts[i] = nil
+				continue
+			}
+
+			nameAccounts[i] = n
+		}
 	}
 
 	return nameAccounts, nil

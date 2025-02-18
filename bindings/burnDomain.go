@@ -19,7 +19,7 @@ func BurnDomain(domain string, owner, target solana.PublicKey) (*solana.GenericI
 		return nil, err
 	}
 	resellingState, _, err := solana.FindProgramAddress(
-		[][]byte{pubkey.PubKey.Bytes(), []byte{1, 1}},
+		[][]byte{pubkey.PubKey.Bytes(), {1, 1}},
 		spl.ResgistryProgramID,
 	)
 	if err != nil {

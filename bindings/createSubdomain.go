@@ -19,10 +19,15 @@ func CreateSubdomain(
 	owner, feePayer solana.PublicKey,
 ) ([]*solana.GenericInstruction, error) {
 
+	if space == 0 {
+		space = 2_000
+	}
+
 	sub := strings.Split(subdomain, ".")[0]
-	if len(sub) == 0 {
+	if sub == "" {
 		return nil, spl.NewSNSError(spl.InvalidDomain, "The subdomain name is malformed", nil)
 	}
+
 	out, err := utils.GetDomainKeySync(subdomain, types.VersionUnspecified)
 	if err != nil {
 		return nil, err
@@ -46,7 +51,7 @@ func CreateSubdomain(
 
 	ixOne, err := CreateNameRegistry(
 		conn,
-		fmt.Sprintf("\\0%s", sub),
+		fmt.Sprintf("\x00%s", sub),
 		whoTopay,
 		owner,
 		solana.PublicKey{},
@@ -58,7 +63,7 @@ func CreateSubdomain(
 		return nil, err
 	}
 
-	ixns := make([]*solana.GenericInstruction, 2)
+	ixns := make([]*solana.GenericInstruction, 0, 2)
 	ixns = append(ixns, ixOne)
 
 	reverseKey, err := utils.GetReverseKey(subdomain, true)
@@ -66,9 +71,9 @@ func CreateSubdomain(
 		return nil, err
 	}
 
-	if info, err := conn.GetAccountInfo(context.TODO(), reverseKey); err == nil && info != nil {
+	if info, err := conn.GetAccountInfo(context.TODO(), reverseKey); err != nil || info == nil {
 		ixTwo, err := CreateReverseName(
-			fmt.Sprintf("\\0%s", sub),
+			fmt.Sprintf("\x00%s", sub),
 			out.PubKey,
 			whoTopay,
 			out.Parent,
@@ -78,6 +83,7 @@ func CreateSubdomain(
 			return nil, err
 		}
 		ixns = append(ixns, ixTwo)
+
 	}
 
 	return ixns, nil
