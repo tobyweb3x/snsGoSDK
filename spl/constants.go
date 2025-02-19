@@ -3,7 +3,7 @@ package spl
 import "github.com/gagliardetto/solana-go"
 
 const (
-	HashPrefix = "SPL Name Service"
+	HashPrefix                 = "SPL Name Service"
 	NameRegistryStateHeaderLen = 96
 )
 
@@ -48,7 +48,7 @@ var (
 	// The Wolves Collection Metadata.
 	//  WolvesCollectionMetadata = solana.MustPublicKeyFromBase58("72aLKvXeV4aansAQtxKymeXDevT5ed6sCuz9iN62ugPT")
 	WolvesCollectionMetadata = solana.MustPublicKeyFromBase58("72aLKvXeV4aansAQtxKymeXDevT5ed6sCuz9iN62ugPT")
-	CentralState = ReverseLookupClass
+	CentralState             = ReverseLookupClass
 
 	// The MPL Token Metadata.
 	//  MetaplexID = solana.MustPublicKeyFromBase58("metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s")
@@ -57,6 +57,14 @@ var (
 	// The Name Offers program ID.
 	//  NameOffersID = solana.MustPublicKeyFromBase58("85iDfUvr3HJyLM2zcq5BXSiDvUWfw6cSE1FfNBo8Ap29")
 	NameOffersID = solana.MustPublicKeyFromBase58("85iDfUvr3HJyLM2zcq5BXSiDvUWfw6cSE1FfNBo8Ap29")
+
+	// FIDA mint.
+	//  FIDAMint = solana.MustPublicKeyFromBase58("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+	FIDAMint = solana.MustPublicKeyFromBase58("EchesyfXePKdLtoiZSL8pBe8Myagyy8ZRqsACNCFGnvp")
+
+	// PYTH mint.
+	//  PYTHMint = solana.MustPublicKeyFromBase58("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+	PYTHMint = solana.MustPublicKeyFromBase58("HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3")
 
 	// USDC mint.
 	//  USDCMint = solana.MustPublicKeyFromBase58("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")

@@ -2,6 +2,7 @@ package bindings
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"snsGoSDK/instructions"
 	spl "snsGoSDK/spl"
@@ -37,26 +38,24 @@ func RegisterDomainNameV2(
 	)
 
 	if refIdx != -1 {
-		if refTokenAccount, err =spl. GetAssociatedTokenAddressSync(
-			referrerKey,
+		if refTokenAccount, err = spl.GetAssociatedTokenAddressSync(
 			mint,
+			referrerKey,
 			true,
-			solana.PublicKey{},
-			solana.PublicKey{},
 		); err != nil {
 			return nil, err
 		}
 
-		out, err := conn.GetAccountInfo(
+		out, _ := conn.GetAccountInfo(
 			context.TODO(),
 			refTokenAccount,
 		)
-		if err != nil {
-			return nil, err
-		}
+		// if err != nil && !strings.Contains(err.Error(), "not found") {
+		// 	return nil, err
+		// }
 
 		if out == nil || out.Value.Data == nil {
-			ix := CreateAssociatedTokenAccountIdempotentInstruction(
+			ixn := CreateAssociatedTokenAccountIdempotentInstruction(
 				buyer,
 				refTokenAccount,
 				referrerKey,
@@ -65,7 +64,7 @@ func RegisterDomainNameV2(
 				solana.PublicKey{},
 			)
 
-			ixns = append(ixns, ix)
+			ixns = append(ixns, ixn)
 		}
 	}
 
@@ -73,8 +72,6 @@ func RegisterDomainNameV2(
 		mint,
 		spl.VaultOwner,
 		true,
-		solana.PublicKey{},
-		solana.PublicKey{},
 	)
 	if err != nil {
 		return nil, err
@@ -90,12 +87,6 @@ func RegisterDomainNameV2(
 		return nil, err
 	}
 
-	rf := uint16(refIdx)
-	referrerIdOpt := &rf
-	if refIdx != -1 {
-		referrerIdOpt = nil
-	}
-
 	hashed := utils.GetHashedNameSync(name)
 	nameAccount, _, err := utils.GetNameAccountKeySync(
 		hashed,
@@ -109,7 +100,7 @@ func RegisterDomainNameV2(
 	reverseLookupAccount, _, err := utils.GetNameAccountKeySync(
 		hashedReverseLookup,
 		spl.CentralState,
-		spl.RootDomainAccount)
+		solana.PublicKey{})
 	if err != nil {
 		return nil, err
 	}
@@ -122,10 +113,22 @@ func RegisterDomainNameV2(
 		return nil, err
 	}
 
-	ixTwo,err := instructions.NewCreateSplitV2Instruction(
+	if refIdx < 0 || refIdx > int(^uint16(0)) {
+		return nil, fmt.Errorf("refIdx out of bounds for uint16: %d", refIdx)
+	}
+
+	var referrerIdxOpt *uint16
+	if refIdx == -1 {
+		referrerIdxOpt = nil
+	} else {
+		rf := uint16(refIdx)
+		referrerIdxOpt = &rf
+	}
+
+	ixnTwo, err := instructions.NewCreateSplitV2Instruction(
 		name,
 		space,
-		referrerIdOpt,
+		referrerIdxOpt,
 	).GetInstruction(
 		spl.ResgistryProgramID,
 		spl.NameProgramID,
@@ -143,12 +146,12 @@ func RegisterDomainNameV2(
 		solana.TokenProgramID,
 		solana.SysVarRentPubkey,
 		derivedState,
-		&refTokenAccount,
+		refTokenAccount,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	ixns = append(ixns, ixTwo)
+	ixns = append(ixns, ixnTwo)
 	return ixns, nil
 }

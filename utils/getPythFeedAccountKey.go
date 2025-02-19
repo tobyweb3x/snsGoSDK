@@ -1,22 +1,18 @@
 package utils
 
 import (
-	"bytes"
 	"encoding/binary"
 	spl "snsGoSDK/spl"
 
 	"github.com/gagliardetto/solana-go"
 )
 
-func GetPythFeedAccountKey(shard int, priceFeed []byte) (solana.PublicKey, uint8, error) {
-	var buffer *bytes.Buffer
-	if err := binary.Write(buffer, binary.LittleEndian, shard); err != nil {
-		return solana.PublicKey{}, 0, err
-	}
-
+func GetPythFeedAccountKey(shard uint16, priceFeed []byte) (solana.PublicKey, uint8, error) {
+	buffer := make([]byte, 2)
+	binary.LittleEndian.PutUint16(buffer, shard)
 	return solana.FindProgramAddress(
 		[][]byte{
-			buffer.Bytes(),
+			buffer,
 			priceFeed,
 		},
 		spl.DefaultPythPushProgram,

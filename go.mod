@@ -5,6 +5,7 @@ go 1.23.3
 require (
 	github.com/btcsuite/btcutil v1.0.2
 	github.com/gagliardetto/binary v0.8.0
+	github.com/gagliardetto/metaplex-go v0.2.1
 	github.com/gagliardetto/solana-go v1.12.0
 	github.com/joho/godotenv v1.5.1
 	github.com/near/borsh-go v0.3.2-0.20220516180422-1ff87d108454
@@ -15,10 +16,8 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
-	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
-	github.com/btcsuite/btcd v0.20.1-beta // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/gagliardetto/treeout v0.1.4 // indirect

@@ -14,10 +14,6 @@ type CreateSplitV2Instruction struct {
 	ReferrerIdxOpt *uint16
 }
 
-func (cs *CreateSplitV2Instruction) Serialize() ([]byte, error) {
-	return borsh.Serialize(*cs)
-}
-
 func NewCreateSplitV2Instruction(name string, space uint32, referrerIdxOpt *uint16) *CreateSplitV2Instruction {
 	return &CreateSplitV2Instruction{
 		Tag:            20,
@@ -44,10 +40,10 @@ func (cs *CreateSplitV2Instruction) GetInstruction(
 	splTokenProgram,
 	rentSysvar,
 	state solana.PublicKey,
-	referrerAccountOpt *solana.PublicKey,
+	referrerAccountOpt solana.PublicKey,
 ) (*solana.GenericInstruction, error) {
 
-	data, err := cs.Serialize()
+	data, err := borsh.Serialize(*cs)
 	if err != nil {
 		return nil, err
 	}
@@ -73,8 +69,8 @@ func (cs *CreateSplitV2Instruction) GetInstruction(
 		{PublicKey: state, IsSigner: false, IsWritable: false},
 	}
 
-	if referrerAccountOpt != nil {
-		keys = append(keys, &solana.AccountMeta{PublicKey: *referrerAccountOpt, IsSigner: false, IsWritable: true})
+	if !referrerAccountOpt.IsZero() {
+		keys = append(keys, &solana.AccountMeta{PublicKey: referrerAccountOpt, IsSigner: false, IsWritable: true})
 	}
 
 	return solana.NewInstruction(

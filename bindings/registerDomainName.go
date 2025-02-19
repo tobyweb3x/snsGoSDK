@@ -42,8 +42,6 @@ func RegisterDomainName(
 			referrerKey,
 			mint,
 			true,
-			solana.PublicKey{},
-			solana.PublicKey{},
 		); err != nil {
 			return nil, err
 		}
@@ -74,8 +72,6 @@ func RegisterDomainName(
 		mint,
 		spl.VaultOwner,
 		true,
-		solana.PublicKey{},
-		solana.PublicKey{},
 	)
 	if err != nil {
 		return nil, err
@@ -196,7 +192,7 @@ func BuildAssociatedTokenAccountInstruction(
 	}
 
 	return solana.NewInstruction(
-		programId,
+		associatedTokenProgramId,
 		keys,
 		instructionData,
 	)

@@ -153,8 +153,6 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 			mint,
 			wallets[i],
 			true,
-			solana.PublicKey{},
-			solana.PublicKey{},
 		)
 		if err != nil {
 			atas = append(atas, solana.PublicKey{})
