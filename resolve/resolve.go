@@ -49,7 +49,7 @@ func Resolve(
 	if err != nil {
 		return solana.PublicKey{}, err
 	}
-	solRecordv1Key, err := record.GetRecordKey(domain, types.SOL)
+	solRecordv1Key, err := record.GetRecordKeySync(domain, types.SOL)
 	if err != nil {
 		return solana.PublicKey{}, err
 	}

@@ -44,6 +44,11 @@ func SerializeRecord(str string, record types.Record) ([]byte, error) {
 		if hrp != "inj" {
 			return nil, spl.NewSNSError(spl.InvalidInjectiveAddress, "the record content must start with `inj`", nil)
 		}
+
+		if decoded, err = bech32.ConvertBits(decoded, 5, 8, false); err != nil {
+			return nil, spl.NewSNSError(spl.InvalidInjectiveAddress, "error coverting bech32 5-bit to 8-bit string", err)
+		}
+
 		if len(decoded) != 20 {
 			return nil, spl.NewSNSError(spl.InvalidInjectiveAddress, "the record content must be 20 bytes long", nil)
 		}
@@ -55,10 +60,10 @@ func SerializeRecord(str string, record types.Record) ([]byte, error) {
 			return nil, spl.NewSNSError(spl.InvalidARecord, "the record content must be a valid IP address", nil)
 		}
 
-		if len(ip) != 4 {
-			return nil, spl.NewSNSError(spl.InvalidARecord, "The record content must be 4 bytes long", nil)
+		ip = ip.To4()
+		if ip == nil || len(ip) != 4 {
+			return nil, spl.NewSNSError(spl.InvalidARecord, "the record content must be a valid IPv4 address", nil)
 		}
-
 		return ip, nil
 
 	} else if record == types.AAAA {

@@ -20,7 +20,7 @@ func CreateRecordInstruction(
 	domain, data string,
 	owner, payer solana.PublicKey) (*solana.GenericInstruction, error) {
 
-	if record != types.SOL {
+	if record == types.SOL {
 		return nil, spl.NewSNSError(spl.UnsupportedRecord, "SOL record is not supported for this instruction", nil)
 	}
 

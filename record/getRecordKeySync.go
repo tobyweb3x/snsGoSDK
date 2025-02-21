@@ -8,7 +8,7 @@ import (
 	"github.com/gagliardetto/solana-go"
 )
 
-func GetRecordKey(domain string, record types.Record) (solana.PublicKey, error) {
+func GetRecordKeySync(domain string, record types.Record) (solana.PublicKey, error) {
 	out, err := utils.GetDomainKeySync(
 		fmt.Sprintf("%s.%s", string(record), domain),
 		types.V1,
