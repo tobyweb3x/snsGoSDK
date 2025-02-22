@@ -145,9 +145,7 @@ func TestRegisterDomainNameV2(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-
 		// t.Parallel()
-
 		t.Run(tt.Name, func(t *testing.T) {
 			ixns, err := tt.Fn(conn)
 			if err != nil {

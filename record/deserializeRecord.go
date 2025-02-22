@@ -63,7 +63,7 @@ func DeserializeRecord(
 			return base58.Encode(buffer[0:32]), nil
 		}
 	}
-	fmt.Println("idx", idx, size)
+
 	// Old record UTF-8 encoded
 	if ok && int(size) != idx {
 		if address := string(buffer[0:idx]); record == types.Injective {

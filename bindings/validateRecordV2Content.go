@@ -10,7 +10,7 @@ import (
 	"github.com/gagliardetto/solana-go"
 )
 
-func ValidateRecordV2Contents(
+func ValidateRecordV2Content(
 	domain string,
 	staleness bool,
 	record types.Record,
@@ -25,13 +25,11 @@ func ValidateRecordV2Contents(
 		return nil, err
 	}
 	if out.IsSub {
-		out2, err := utils.GetDomainKeySync(
-			domain, types.VersionUnspecified,
-		)
+		parent, err := utils.GetDomainKeySync(domain, types.VersionUnspecified)
 		if err != nil {
-			return nil, err
+			return nil, spl.NewSNSError(spl.InvalidParrent, "parent could not be found", err)
 		}
-		out.Parent = out2.PubKey
+		out.Parent = parent.PubKey
 	}
 
 	if out.Parent.IsZero() {

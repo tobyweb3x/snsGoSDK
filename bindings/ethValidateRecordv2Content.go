@@ -2,7 +2,6 @@ package bindings
 
 import (
 	"fmt"
-	"reflect"
 	snsRecord "snsGoSDK/sns-record"
 	spl "snsGoSDK/spl"
 	"snsGoSDK/types"
@@ -11,7 +10,7 @@ import (
 	"github.com/gagliardetto/solana-go"
 )
 
-func EthValidateRecordv2Content(
+func EthValidateRecordV2Content(
 	domain string,
 	record types.Record,
 	owner, payer solana.PublicKey,
@@ -25,17 +24,22 @@ func EthValidateRecordv2Content(
 	if err != nil {
 		return nil, err
 	}
-	var parent utils.DomainKeyResult
 	if out.IsSub {
-		if parent, err = utils.GetDomainKeySync(domain, types.VersionUnspecified); err != nil || reflect.ValueOf(parent).IsZero() {
-			return nil, err
+		parent, err := utils.GetDomainKeySync(domain, types.VersionUnspecified)
+		if err != nil {
+			return nil, spl.NewSNSError(spl.InvalidParrent, "parent could not be found", err)
 		}
+		out.Parent = parent.PubKey
+	}
+
+	if out.Parent.IsZero() {
+		return nil, spl.NewSNSError(spl.InvalidParrent, "parent could not be found", nil)
 	}
 
 	return snsRecord.ValidateEthSignature(
 		payer,
+		out.PubKey,
 		out.Parent,
-		parent.Parent,
 		owner,
 		spl.NameProgramID,
 		snsRecord.SNSRecordsID,

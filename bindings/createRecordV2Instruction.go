@@ -26,14 +26,18 @@ func CreateRecordV2Instruction(
 	}
 
 	if out.IsSub {
-		out2, err := utils.GetDomainKeySync(domain, types.V2)
+		parent, err := utils.GetDomainKeySync(domain, types.VersionUnspecified)
 		if err != nil {
-			return nil, spl.NewSNSError(spl.InvalidParrent, "parent could not be found", nil)
+			return nil, spl.NewSNSError(spl.InvalidParrent, "parent could not be found", err)
 		}
-		out.Parent = out2.PubKey
+		out.Parent = parent.PubKey
 	}
 
-	data, err := recordv2.SerializeRecordv2Contents(content, record)
+	if out.Parent.IsZero() {
+		return nil, spl.NewSNSError(spl.InvalidParrent, "parent could not be found", nil)
+	}
+
+	data, err := recordv2.SerializeRecordV2Content(content, record)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +49,7 @@ func CreateRecordV2Instruction(
 		owner,
 		spl.NameProgramID,
 		snsRecord.SNSRecordsID,
-		fmt.Sprintf("x02%s", domain),
+		fmt.Sprintf("\x02%s", string(record)),
 		data,
 	)
 }

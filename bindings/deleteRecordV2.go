@@ -2,7 +2,6 @@ package bindings
 
 import (
 	"fmt"
-	"reflect"
 	snsRecords "snsGoSDK/sns-record"
 	spl "snsGoSDK/spl"
 	"snsGoSDK/types"
@@ -24,20 +23,24 @@ func DeleteRecordV2(
 		return nil, err
 	}
 
-	var parent utils.DomainKeyResult
 	if out.IsSub {
-		if parent, err = utils.GetDomainKeySync(domain, types.VersionUnspecified); err != nil || reflect.ValueOf(parent).IsZero() {
+		parent, err := utils.GetDomainKeySync(domain, types.VersionUnspecified)
+		if err != nil {
 			return nil, spl.NewSNSError(spl.InvalidParrent, "parent could not be found", err)
 		}
+		out.Parent = parent.PubKey
+	}
+
+	if out.Parent.IsZero() {
+		return nil, spl.NewSNSError(spl.InvalidParrent, "parent could not be found", nil)
 	}
 
 	return snsRecords.DeleteRecord(
 		payer,
-		parent.Parent,
+		out.Parent,
 		owner,
 		out.PubKey,
 		spl.NameProgramID,
 		snsRecords.SNSRecordsID,
 	)
-
 }

@@ -38,7 +38,7 @@ func UpdateRecordV2Instruction(
 		return nil, spl.NewSNSError(spl.InvalidParrent, "parent could not be found", nil)
 	}
 
-	data, err := recordv2.SerializeRecordv2Contents(content, record)
+	data, err := recordv2.SerializeRecordV2Content(content, record)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func UpdateRecordV2Instruction(
 		owner,
 		spl.NameProgramID,
 		snsRecord.SNSRecordsID,
-		fmt.Sprintf("\\x02%s", content),
+		fmt.Sprintf("\x02%s", content),
 		data,
 	)
 }
