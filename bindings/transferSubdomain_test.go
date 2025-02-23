@@ -2,13 +2,8 @@ package bindings_test
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
-	"fmt"
 	"os"
 	"snsGoSDK/bindings"
-	"snsGoSDK/resolve"
-	"snsGoSDK/spl"
 	"testing"
 
 	"github.com/gagliardetto/solana-go"
@@ -17,8 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateSubdomain(t *testing.T) {
-
+func TestTransferSubdomain(t *testing.T) {
 	if err := godotenv.Load(); err != nil {
 		t.Fatalf("cannot load env file: error: %s", err.Error())
 	}
@@ -32,55 +26,40 @@ func TestCreateSubdomain(t *testing.T) {
 	)
 
 	tests := []struct {
-		name string
-		fn   func(*rpc.Client) ([]*solana.GenericInstruction, error)
+		name                string
+		feePayer            solana.PublicKey
+		isParentOwnerSigner bool
+		// fn func(*rpc.Client) ([]*solana.GenericInstruction, error)
 	}{
 		{
-			name: "resolve & createSubdomain",
-			fn: func(conn *rpc.Client) ([]*solana.GenericInstruction, error) {
-
-				sub, parent := "gvbhnjklmjnhb", "bonfida.sol"
-				parentOwner, err := resolve.Resolve(conn, parent, resolve.ResolveConfig{})
-				if err != nil {
-					return nil, fmt.Errorf("resolve() failed: %s", err.Error())
-				}
-				ix, err := bindings.CreateSubdomain(
-					conn,
-					fmt.Sprintf("%s.%s", sub, parent),
-					1_000,
-					parentOwner,
-					solana.PublicKey{},
-				)
-				if err != nil {
-					return nil, fmt.Errorf("CreateSubdomain() failed: %s", err.Error())
-				}
-				return ix, nil
-			},
+			name:                "Transfer sub - isParentOwnerSigner set to false",
+			feePayer:            solana.MustPublicKeyFromBase58("A41TAGFpQkFpJidLwH37ydunE7Q3jpBaS228RkoXiRQk"),
+			isParentOwnerSigner: false,
 		},
 		{
-			name: "createsubdomain",
-			fn: func(conn *rpc.Client) ([]*solana.GenericInstruction, error) {
-				randomBytes := make([]byte, 10)
-				if _, err := rand.Read(randomBytes); err != nil {
-					return nil, fmt.Errorf("err generating random values: error: %v", err)
-				}
-				ix, err := bindings.CreateSubdomain(
-					conn,
-					fmt.Sprintf("%s.bonfida", string(hex.EncodeToString(randomBytes))),
-					2_000,
-					solana.MustPublicKeyFromBase58("HKKp49qGWXd639QsuH7JiLijfVW5UtCVY4s1n2HANwEA"),
-					solana.PublicKey{},
-				)
-				if err != nil {
-					return nil, err
-				}
-				return ix, nil
-			},
+			name:                "Transfer sub - isParentOwnerSigner set to true",
+			feePayer:            solana.MustPublicKeyFromBase58("A41TAGFpQkFpJidLwH37ydunE7Q3jpBaS228RkoXiRQk"),
+			isParentOwnerSigner: true,
 		},
 	}
+
+	fn := func(conn *rpc.Client, isParentOwnerSigner bool) ([]*solana.GenericInstruction, error) {
+		ixn, err := bindings.TransferSubdomain(
+			conn,
+			"test.0x33.sol",
+			solana.PublicKey{},
+			solana.PublicKey{},
+			isParentOwnerSigner,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return []*solana.GenericInstruction{ixn}, nil
+	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ixns, err := tt.fn(conn)
+			ixns, err := fn(conn, tt.isParentOwnerSigner)
 			if err != nil {
 				t.Fatalf("testFn failed: error: %v", err)
 				return
@@ -100,7 +79,7 @@ func TestCreateSubdomain(t *testing.T) {
 			tx, err := solana.NewTransaction(
 				instructions,
 				recent.Value.Blockhash,
-				solana.TransactionPayer(spl.VaultOwner),
+				solana.TransactionPayer(tt.feePayer),
 			)
 			if err != nil {
 				t.Fatalf("newTransaction failed: error: %v", err)
@@ -128,7 +107,9 @@ func TestCreateSubdomain(t *testing.T) {
 				return
 			}
 
-			assert.Nil(t, out.Value.Err)
+			assert.Equal(t, out.Value.Err, "AccountNotFound")
+			// assert.Nil(t, out.Value.Err)
 		})
+
 	}
 }

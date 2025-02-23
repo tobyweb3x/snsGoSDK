@@ -27,11 +27,11 @@ func TransferSubdomain(
 	}
 	if owner.IsZero() {
 		var nm spl.NameRegistryState
-		out, err := nm.Retrieve(conn, out.PubKey)
+		parent, err := nm.Retrieve(conn, out.PubKey)
 		if err != nil {
 			return nil, err
 		}
-		owner = out.Registry.Owner
+		owner = parent.Registry.Owner
 	}
 
 	var nameParent, nameParentOwner solana.PublicKey
@@ -39,11 +39,11 @@ func TransferSubdomain(
 	if isParentOwnerSigner {
 		nameParent = out.Parent
 		var nm spl.NameRegistryState
-		out, err := nm.Retrieve(conn, out.Parent)
+		out2, err := nm.Retrieve(conn, out.Parent)
 		if err != nil {
 			return nil, err
 		}
-		nameParentOwner = out.Registry.Owner
+		nameParentOwner = out2.Registry.Owner
 	}
 
 	return instructions.TransferInstruction(

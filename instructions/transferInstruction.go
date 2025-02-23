@@ -2,7 +2,6 @@ package instructions
 
 import (
 	"bytes"
-	"encoding/binary"
 
 	"github.com/gagliardetto/solana-go"
 )
@@ -18,7 +17,7 @@ func TransferInstruction(
 	var dataBuffer bytes.Buffer
 
 	dataBuffer.WriteByte(2)
-	binary.Write(&dataBuffer, binary.LittleEndian, newOwnerKey)
+	dataBuffer.Write(newOwnerKey.Bytes())
 
 	keys := []*solana.AccountMeta{
 		{PublicKey: nameAccountKey, IsSigner: false, IsWritable: true},
@@ -36,7 +35,7 @@ func TransferInstruction(
 
 	if !parentOwner.IsZero() && !nameParent.IsZero() {
 		if nameClassKey.IsZero() {
-			keys = append(keys, &solana.AccountMeta{PublicKey: solana.PublicKeyFromBytes(make([]byte, 32)), IsSigner: false, IsWritable: false})
+			keys = append(keys, &solana.AccountMeta{PublicKey: solana.PublicKey{}, IsSigner: false, IsWritable: false})
 		}
 
 		keys = append(keys, &solana.AccountMeta{PublicKey: nameParent, IsSigner: false, IsWritable: false})
