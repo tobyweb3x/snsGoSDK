@@ -55,24 +55,18 @@ func TestReverseLookUp(t *testing.T) {
 			domain: solana.MustPublicKeyFromBase58("54obixuvJKGeJ6zFwYy1zb55G5c5z3B65MRXcc7fmaVU"),
 			want:   "niftydegen",
 		},
-		// {
-		// 	name:   "Test case 6,
-		// 	domain: solana.MustPublicKeyFromBase58("5monfqudwcjVztfNa4nAyL4AwwymKgBspdR3RcvhKX4w"),
-		// 	want:   "sokka.ambassador",
-		// },
 	}
 
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("%s: - reverseLookUp", tt.name),
-			func(t *testing.T) {
-				// t.Parallel()
-				got, err := utils.ReverseLookup(conn, tt.domain, solana.PublicKey{})
-				if assert.Nil(t, err) {
-					assert.Equal(t, tt.want, got)
-				} else {
-					t.Errorf("reverseLookUp error = %v", err)
-				}
-			})
-	}
+		t.Run(fmt.Sprintf("ReverseLookUp:%s", tt.name), func(t *testing.T) {
+			// t.Parallel()
+			got, err := utils.ReverseLookup(conn, tt.domain, solana.PublicKey{})
+			if err != nil {
+				t.Fatalf("ReverseLookUp: error: %v\n", err)
+				return
+			}
 
+			assert.Equal(t, tt.want, got)
+		})
+	}
 }

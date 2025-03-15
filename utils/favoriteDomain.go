@@ -3,6 +3,7 @@ package utils
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"snsGoSDK/nft"
 	spl "snsGoSDK/spl"
@@ -12,6 +13,7 @@ import (
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/programs/token"
 	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/near/borsh-go"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -21,21 +23,26 @@ type GetPrimaryDomainResult struct {
 	Stale   bool
 }
 
+func GetFavoriteDoamin(conn *rpc.Client, owner solana.PublicKey) (GetPrimaryDomainResult, error) {
+	return GetPrimaryDomain(conn, owner)
+}
+
 func GetPrimaryDomain(conn *rpc.Client, owner solana.PublicKey) (GetPrimaryDomainResult, error) {
 
 	var fd spl.FavoriteDmain
-	favKey, _, err := fd.GetKey(spl.NameOffersID, owner)
+	favKey, err := fd.GetKey(spl.NameOffersID, owner)
 	if err != nil {
-
+		return GetPrimaryDomainResult{}, err
 	}
-	if err := fd.Retrieve(conn, favKey); err != nil {
 
+	if err := fd.Retrieve(conn, favKey); err != nil {
+		return GetPrimaryDomainResult{}, err
 	}
 
 	var nm spl.NameRegistryState
 	out, err := nm.Retrieve(conn, fd.NameAccount)
 	if err != nil {
-
+		return GetPrimaryDomainResult{}, err
 	}
 
 	var domainOwner, parent solana.PublicKey
@@ -49,8 +56,9 @@ func GetPrimaryDomain(conn *rpc.Client, owner solana.PublicKey) (GetPrimaryDomai
 		parent,
 	)
 	if err != nil {
-
+		return GetPrimaryDomainResult{}, err
 	}
+
 	if !out.Registry.ParentName.Equals(spl.RootDomainAccount) {
 		parentReverse, err := ReverseLookup(
 			conn,
@@ -58,7 +66,7 @@ func GetPrimaryDomain(conn *rpc.Client, owner solana.PublicKey) (GetPrimaryDomai
 			solana.PublicKey{},
 		)
 		if err != nil {
-
+			return GetPrimaryDomainResult{}, err
 		}
 		reverse = strings.Join([]string{reverse, parentReverse}, ".")
 	}
@@ -71,20 +79,23 @@ func GetPrimaryDomain(conn *rpc.Client, owner solana.PublicKey) (GetPrimaryDomai
 
 	return GetPrimaryDomainResult{
 		Domain:  fd.NameAccount,
-		Reverse: reverse,
-		Stale:   owner.Equals(domainOwner),
+		Reverse: string(bytes.TrimPrefix([]byte(reverse), []byte("\x00"))),
+		Stale:   !owner.Equals(domainOwner),
 	}, nil
 
 }
 
+// GetMultipleFavoriteDomain can be used to retrieve the favorite domains for multiple wallets, up to a maximum of 100.
+// If a wallet does not have a favorite domain, the result will be 'undefined' instead of the human readable domain as a string.
+// This function is optimized for network efficiency, making only four RPC calls, three of which are executed in parallel using Promise.all, thereby reducing the overall execution time.
 func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]string, error) {
 
 	result := make([]string, 0, len(wallets))
 
 	favKeys := make([]solana.PublicKey, 0, len(wallets))
-	for i := 0; i < len(wallets); i++ {
+	for _, v := range wallets {
 		var fd spl.FavoriteDmain
-		favKey, _, err := fd.GetKey(spl.NameOffersID, wallets[i])
+		favKey, err := fd.GetKey(spl.NameOffersID, v)
 		if err != nil {
 			favKeys = append(favKeys, solana.PublicKey{})
 			continue
@@ -97,10 +108,22 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 		return nil, err
 	}
 
+	if out.Value == nil {
+		return nil, errors.New("empty result from call to GetMultipleAccounts")
+	}
+
+	if len(out.Value) != len(favKeys) {
+		return nil, errors.New("incomplete data from call to GetMultipleAccounts")
+	}
+
 	favDomains := make([]solana.PublicKey, 0, len(out.Value))
-	for i := 0; i < len(out.Value); i++ {
+	for _, v := range out.Value {
 		var fd spl.FavoriteDmain
-		if err := fd.Retrieve(conn, wallets[i]); err != nil {
+		if v == nil || v.Data == nil {
+			favDomains = append(favDomains, solana.PublicKey{})
+			continue
+		}
+		if err := borsh.Deserialize(&fd, v.Data.GetBinary()); err != nil {
 			favDomains = append(favDomains, solana.PublicKey{})
 			continue
 		}
@@ -111,10 +134,18 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 	if err != nil {
 		return nil, err
 	}
+
+	if domainInfos.Value == nil {
+		return nil, errors.New("empty result from call to GetMultipleAccounts")
+	}
+
+	if len(domainInfos.Value) != len(favDomains) {
+		return nil, errors.New("incomplete data from call to GetMultipleAccounts, 2")
+	}
+
 	parentRevKeys := make([]solana.PublicKey, 0, len(domainInfos.Value))
 	revKeys := make([]solana.PublicKey, 0, len(domainInfos.Value))
-	for i := 0; i < len(domainInfos.Value); i++ {
-		v := domainInfos.Value[i]
+	for i, v := range domainInfos.Value {
 		var parent solana.PublicKey
 		if v != nil && len(v.Data.GetBinary()) > 32 {
 			parent = solana.PublicKeyFromBytes(v.Data.GetBinary()[:32])
@@ -122,28 +153,21 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 			parent = solana.PublicKey{}
 		}
 
+		input, _ := GetReverseKeyFromDomainkey(parent, solana.PublicKey{})
+		parentRevKeys = append(parentRevKeys, input)
+
 		isSub := v != nil && v.Owner.Equals(spl.NameProgramID) && !parent.Equals(spl.RootDomainAccount)
-
-		if input, err := GetReverseKeyFromDomainkey(parent, solana.PublicKey{}); isSub && err != nil {
-			parentRevKeys = append(parentRevKeys, input)
-		} else {
-			parentRevKeys = append(parentRevKeys, solana.PublicKey{})
-		}
-
 		if !isSub {
 			parent = solana.PublicKey{}
 		}
 
-		if input, err := GetReverseKeyFromDomainkey(favDomains[i], parent); err != nil {
-			revKeys = append(revKeys, input)
-		} else {
-			revKeys = append(revKeys, solana.PublicKey{})
-		}
+		input, _ = GetReverseKeyFromDomainkey(favDomains[i], parent)
+		revKeys = append(revKeys, input)
+
 	}
 
 	atas := make([]solana.PublicKey, 0, len(favDomains))
-	for i := 0; i < len(favDomains); i++ {
-		v := favDomains[i]
+	for i, v := range favDomains {
 		mint, _, err := nft.GetDomainMint(v)
 		if err != nil {
 			atas = append(atas, solana.PublicKey{})
@@ -198,6 +222,7 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 		return nil, err
 	}
 
+
 	for i := 0; i < len(wallets); i++ {
 		var (
 			domainInfo       = domainInfos.Value[i]
@@ -212,11 +237,10 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 		}
 
 		if parentRevAccount != nil && parentRevAccount.Owner.Equals(spl.NameProgramID) {
-			str, err := DeserializeReverse(parentRevAccount.Owner.Bytes()[96:], false)
-			if err != nil {
-
+			if len(parentRevAccount.Owner.Bytes()) > 96 {
+				str, _ := DeserializeReverse(parentRevAccount.Owner.Bytes()[96:], false)
+				parentRev = fmt.Sprintf(".%s", str)
 			}
-			parentRev = fmt.Sprintf("%s.des", str)
 		}
 
 		if len(domainInfo.Data.GetBinary()) < 64 {
@@ -226,13 +250,16 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 
 		nativeOwner := solana.PublicKeyFromBytes(domainInfo.Data.GetBinary()[32:64])
 		if nativeOwner.Equals(wallets[i]) {
-			str, err := DeserializeReverse(rev.Owner.Bytes()[96:], false)
-			if err != nil {
-				result = append(result, "")
+			if len(rev.Owner.Bytes()) > 96 {
+				str, err := DeserializeReverse(rev.Owner.Bytes()[96:], false)
+				if err != nil {
+					result = append(result, "")
+					continue
+				}
+				result = append(result, str)
 				continue
 			}
-			result = append(result, str)
-			continue
+			//  TODO: incomplete
 		}
 
 		// Either tokenized or stale
@@ -247,18 +274,23 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 			continue
 		}
 
+		// Tokenized
 		if decoded.Amount == 1 {
 			var data bytes.Buffer
-			data.Write(rev.Data.GetBinary()[96:])
+			if len(rev.Data.GetBinary()) > 96 {
+				data.Write(rev.Data.GetBinary()[96:])
+			}
 			data.WriteString(parentRev)
 			str, err := DeserializeReverse(data.Bytes(), false)
 			if err != nil {
 				result = append(result, "")
 				continue
 			}
-			result = append(result, str)
+			result = append(result, fmt.Sprintf("%s%s", str, parentRev))
 			continue
 		}
+
+		// Stale
 
 		result = append(result, "")
 	}

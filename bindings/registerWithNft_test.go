@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 	"os"
 	"snsGoSDK/bindings"
 	"snsGoSDK/spl"
@@ -52,14 +51,6 @@ func TestRegisterWithNFT(t *testing.T) {
 		nftMint := solana.MustPublicKeyFromBase58("7cpq5U6ze5PPcTPVxGifXA8xyDp8rgAJQNwBDj8eWd8w")
 
 		nftMetadata, _, err := solana.FindTokenMetadataAddress(nftMint)
-		// nftMetadata, _, err := solana.FindProgramAddress(
-		// 	[][]byte{
-		// 		[]byte("metadata"),
-		// 		token_metadata.ProgramID.Bytes(), // Token Metadata Program ID
-		// 		nftMint.Bytes(),
-		// 	},
-		// 	token_metadata.ProgramID,
-		// )
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -130,9 +121,9 @@ func TestRegisterWithNFT(t *testing.T) {
 
 		assert.Nil(t, simTxn.Value.Err)
 
-		fmt.Println(len(simTxn.Value.Logs))
-		for i, v := range simTxn.Value.Logs {
-			fmt.Printf("%d --- %s\n", i, v)
-		}
+		// fmt.Println(len(simTxn.Value.Logs))
+		// for i, v := range simTxn.Value.Logs {
+		// 	fmt.Printf("%d --- %s\n", i, v)
+		// }
 	})
 }

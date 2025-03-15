@@ -99,8 +99,9 @@ func TestResolve(t *testing.T) {
 			func(t *testing.T) {
 				// t.Parallel()
 				got, err := resolve.Resolve(conn, tt.domain, tt.config)
-				if !assert.Nil(t, err) {
-					t.Errorf("Resolve() error = %v", err)
+				if err != nil {
+					t.Fatalf("Resolve() error = %v", err)
+					return
 				}
 
 				assert.Equal(t, tt.want, got.String())
@@ -128,11 +129,11 @@ func TestResolve(t *testing.T) {
 			domain: "sns-ip-5-wallet-11",
 			err:    string(spl.PdaOwnerNotAllowed),
 		},
-		// {
-		// 	name: "Test case 4",
-		// 	domain: "sns-ip-5-wallet-12",
-		// 	err:    string(spl.InvalidRoA),
-		// },
+		{
+			name:   "Test case 4",
+			domain: "sns-ip-5-wallet-12",
+			err:    string(spl.InvalidRoA),
+		},
 	}
 
 	for _, tt := range errorTests {
@@ -140,6 +141,7 @@ func TestResolve(t *testing.T) {
 			func(t *testing.T) {
 				// t.Parallel()
 				_, err := resolve.Resolve(conn, tt.domain, resolve.ResolveConfig{})
+				fmt.Println(err.Error())
 				assert.ErrorContains(t, err, tt.err)
 			})
 	}
@@ -190,6 +192,7 @@ func TestResolve(t *testing.T) {
 			domain: "sub-1.wallet-guide-3.sol",
 			owner:  "Hf4daCT4tC2Vy9RCe9q8avT68yAsNJ1dQe6xiQqyGuqZ",
 		},
+		// Record V2
 		{
 			name:   "Test case 9",
 			domain: "wallet-guide-6",

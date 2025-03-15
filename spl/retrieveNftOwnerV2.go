@@ -10,7 +10,8 @@ import (
 	"github.com/gagliardetto/solana-go/rpc"
 	"github.com/gagliardetto/solana-go/rpc/jsonrpc"
 )
-
+// retrieveNftOwnerV2 can return empty public key even when error is nil, ensure to check.
+//  solana.PublicKey{}.IsZero()
 func retrieveNftOwnerV2(conn *rpc.Client, nameAccount solana.PublicKey) (solana.PublicKey, error) {
 
 	mint, err := getDomainMint(nameAccount)
@@ -36,12 +37,12 @@ func retrieveNftOwnerV2(conn *rpc.Client, nameAccount solana.PublicKey) (solana.
 		return solana.PublicKey{}, err
 	}
 
-	var mintInfo token.Mint
+	var mintInfo token.Account
 	if err := bin.NewBinDecoder(largestAccountInfo.Bytes()).Decode(&mint); err != nil {
 		return solana.PublicKey{}, err
 	}
 
-	if mintInfo.Supply == 1 {
+	if mintInfo.Amount == 1 {
 		return largestAccountInfo.Value.Owner, nil
 	}
 

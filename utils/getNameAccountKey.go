@@ -7,7 +7,7 @@ import (
 )
 
 func GetNameAccountKeySync(hashedName []byte, nameClass, nameParent solana.PublicKey) (solana.PublicKey, uint8, error) {
-	var seeds [][]byte
+	seeds := make([][]byte, 0, 3)
 	seeds = append(seeds, hashedName)
 
 	if nameClass.IsZero() {

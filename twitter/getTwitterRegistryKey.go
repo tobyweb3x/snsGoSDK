@@ -7,7 +7,7 @@ import (
 	"github.com/gagliardetto/solana-go"
 )
 
-func getTwitterRegistryKey(twitterHandle string) (solana.PublicKey, error) {
+func GetTwitterRegistryKey(twitterHandle string) (solana.PublicKey, error) {
 	hashedTwitterHandle := utils.GetHashedNameSync(twitterHandle)
 	out, _, err := utils.GetNameAccountKeySync(
 		hashedTwitterHandle,

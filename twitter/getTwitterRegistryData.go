@@ -9,7 +9,7 @@ import (
 	"github.com/gagliardetto/solana-go/rpc"
 )
 
-func getTwitterRegistryKeyData(conn *rpc.Client, verifiedPubKey solana.PublicKey) ([]byte, error) {
+func GetTwitterRegistryKeyData(conn *rpc.Client, verifiedPubKey solana.PublicKey) ([]byte, error) {
 
 	filteredAccounts, err := conn.GetProgramAccountsWithOpts(
 		context.TODO(),

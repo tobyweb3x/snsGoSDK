@@ -29,7 +29,6 @@ func TestTransferSubdomain(t *testing.T) {
 		name                string
 		feePayer            solana.PublicKey
 		isParentOwnerSigner bool
-		// fn func(*rpc.Client) ([]*solana.GenericInstruction, error)
 	}{
 		{
 			name:                "Transfer sub - isParentOwnerSigner set to false",

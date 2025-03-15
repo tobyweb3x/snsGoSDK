@@ -43,5 +43,9 @@ func (rt *ReverseTwitterRegistryState) Retrieve(conn *rpc.Client, reverseTwitter
 		return spl.NewSNSError(spl.InvalidReverseTwitter, "data is too short to contain valid registry state", nil)
 	}
 
+	if rt == nil {
+		rt = &ReverseTwitterRegistryState{}
+	}
+
 	return borsh.Deserialize(rt, reverseTwitterAccount.Bytes()[spl.NameRegistryStateHeaderLen:])
 }

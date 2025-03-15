@@ -13,7 +13,7 @@ func GetHandleAndRegistryKey(conn *rpc.Client, verifiedPubkey solana.PublicKey) 
 	hashedVerifiedPubkey := utils.GetHashedNameSync(verifiedPubkey.String())
 	reverseRegistryKey, _, err := utils.GetNameAccountKeySync(
 		hashedVerifiedPubkey,
-		spl.TwittwrVerificationAuthority,
+		spl.TwitterVerificationAuthority,
 		spl.TwitterRootParentRegistryKey,
 	)
 	if err != nil {

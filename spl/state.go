@@ -22,24 +22,17 @@ type RetrieveResult struct {
 }
 
 type NameRegistryState struct {
-	headerLen                uint8 `borsh_skip:"true"`
 	ParentName, Owner, Class solana.PublicKey
 	Data                     []byte `borsh_skip:"true"`
 }
 
-func (ns *NameRegistryState) HEADER_LEN() uint8 {
-	ns.headerLen = 98
-	return ns.headerLen
-}
-
 func (ns *NameRegistryState) Deserialize(data []byte) error {
-	if err := borsh.Deserialize(&schema, data); err != nil {
-		return fmt.Errorf("borsch deserialization error: %w", err)
+	if err := borsh.Deserialize(ns, data); err != nil {
+		return fmt.Errorf("borsch deserialization error for NameRegistryState: %w", err)
 	}
-
-	ns.ParentName = solana.PublicKeyFromBytes(schema.ParentName[:])
-	ns.Owner = solana.PublicKeyFromBytes(schema.Owner[:])
-	ns.Class = solana.PublicKeyFromBytes(schema.Class[:])
+	// ns.ParentName = solana.PublicKeyFromBytes(schema.ParentName[:])
+	// ns.Owner = solana.PublicKeyFromBytes(schema.Owner[:])
+	// ns.Class = solana.PublicKeyFromBytes(schema.Class[:])
 
 	if len(data) > NameRegistryStateHeaderLen {
 		ns.Data = data[NameRegistryStateHeaderLen:]
@@ -51,7 +44,7 @@ func (ns *NameRegistryState) Deserialize(data []byte) error {
 func (ns *NameRegistryState) Retrieve(conn *rpc.Client, nameAccountKey solana.PublicKey) (RetrieveResult, error) {
 
 	nameAccount, err := conn.GetAccountInfo(context.Background(), nameAccountKey)
-	if err != nil || nameAccount.Value.Owner.IsZero() {
+	if err != nil || nameAccount.Value == nil || nameAccount.Value.Data == nil {
 		return RetrieveResult{}, NewSNSError(AccountDoesNotExist, "The name account does not exist", err)
 	}
 

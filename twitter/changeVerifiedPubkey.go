@@ -10,7 +10,7 @@ import (
 )
 
 func ChangeVerifiedPubKey(conn *rpc.Client, twitterHandle string,
-	currentVerifiedPubKey, newVerifiedPubKey, payerKey solana.PublicKey) ([]solana.Instruction, error) {
+	currentVerifiedPubKey, newVerifiedPubKey, payerKey solana.PublicKey) ([]*solana.GenericInstruction, error) {
 
 	hashedTwitterHandle := utils.GetHashedNameSync(twitterHandle)
 	twitterHandleRegistryKey, _, err := utils.GetNameAccountKeySync(
@@ -23,8 +23,7 @@ func ChangeVerifiedPubKey(conn *rpc.Client, twitterHandle string,
 	}
 
 	// Transfer the user-facing registry ownership
-	var instructionsList []solana.Instruction
-	instructionsList = append(instructionsList, instructions.TransferInstruction(
+	ixnOne := instructions.TransferInstruction(
 		spl.NameProgramID,
 		twitterHandleRegistryKey,
 		newVerifiedPubKey,
@@ -32,7 +31,7 @@ func ChangeVerifiedPubKey(conn *rpc.Client, twitterHandle string,
 		solana.PublicKey{},
 		solana.PublicKey{},
 		solana.PublicKey{},
-	))
+	)
 
 	ixnTwo, err := CreateReverseTwitterRegistry(
 		conn,
@@ -45,6 +44,9 @@ func ChangeVerifiedPubKey(conn *rpc.Client, twitterHandle string,
 		return nil, err
 	}
 
-	instructionsList = append(instructionsList, ixnTwo...)
-	return instructionsList, nil
+	ixnsSlice := make([]*solana.GenericInstruction, 0, len(ixnTwo)+1)
+	ixnsSlice = append(ixnsSlice, ixnOne)
+	ixnsSlice = append(ixnsSlice, ixnTwo...)
+
+	return ixnsSlice, nil
 }

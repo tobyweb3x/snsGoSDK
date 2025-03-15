@@ -49,6 +49,7 @@ func Resolve(
 	if err != nil {
 		return solana.PublicKey{}, err
 	}
+
 	solRecordv1Key, err := record.GetRecordKeySync(domain, types.SOL)
 	if err != nil {
 		return solana.PublicKey{}, err
@@ -88,7 +89,7 @@ func Resolve(
 	}
 
 	// If NFT record active -> NFT owner is the owner
-	if nftRecordInfo != nil && nftRecordInfo.Data.GetBinary() != nil {
+	if nftRecordInfo != nil && nftRecordInfo.Data != nil && len(nftRecordInfo.Data.GetBinary()) != 0 {
 		var nftRecord nft.NftRecord
 		if err := borsh.Deserialize(&nftRecord, nftRecordInfo.Data.GetBinary()); err != nil {
 			return solana.PublicKey{}, err
@@ -105,7 +106,7 @@ func Resolve(
 	}
 
 	// Check SOL record V2
-	if solRecordV2Info != nil && solRecordV2Info.Data.GetBinary() != nil {
+	if solRecordV2Info != nil && solRecordV2Info.Data != nil && len(solRecordV2Info.Data.GetBinary()) != 0 {
 		var recordV2 snsRecord.Record
 		if err := recordV2.Deserialize(solRecordV2Info.Data.GetBinary()); err != nil {
 			return solana.PublicKey{}, err
@@ -130,10 +131,10 @@ func Resolve(
 		if recordV2.Header.RightOfAssociationValidation != uint16(snsRecord.Solana) ||
 			recordV2.Header.StalenessValidation != uint16(snsRecord.Solana) {
 			return solana.PublicKey{},
-				spl.NewSNSError(spl.WrongValidation, "record has wrong validation", nil)
+				spl.NewSNSError(spl.WrongValidation, "", nil)
 		}
 
-		skipFlag := false
+		var skipFlag bool
 		if r := slices.Compare(stalenessId, registry.Owner.Bytes()); r != 0 {
 			skipFlag = true
 		}
@@ -151,10 +152,13 @@ func Resolve(
 	}
 
 	// Check SOL record V1
-	if solRecordV1Info != nil && solRecordV1Info.Data != nil &&
-		len(solRecordV1Info.Data.GetBinary()) > spl.NameRegistryStateHeaderLen+32 {
+	if solRecordV1Info != nil && solRecordV1Info.Data != nil {
+		data := solRecordV1Info.Data.GetBinary()
 		var expectedBuffer bytes.Buffer
-		expectedBuffer.Write(solRecordV1Info.Data.GetBinary()[spl.NameRegistryStateHeaderLen : spl.NameRegistryStateHeaderLen+32])
+		if len(data) < spl.NameRegistryStateHeaderLen+32 {
+			return solana.PublicKey{}, errors.New("data length of record v1 is unexpected")
+		}
+		expectedBuffer.Write(data[spl.NameRegistryStateHeaderLen : spl.NameRegistryStateHeaderLen+32])
 		expectedBuffer.Write(solRecordv1Key.Bytes())
 
 		expectedHex := hex.EncodeToString(expectedBuffer.Bytes())
@@ -162,12 +166,12 @@ func Resolve(
 
 		valid := record.CheckSolRecord(
 			expected,
-			solRecordV1Info.Data.GetBinary()[spl.NameRegistryStateHeaderLen+32:spl.NameRegistryStateHeaderLen+32+solana.SignatureLength],
+			data[spl.NameRegistryStateHeaderLen+32:spl.NameRegistryStateHeaderLen+32+solana.SignatureLength],
 			registry.Owner,
 		)
 		if valid {
 			return solana.PublicKeyFromBytes(
-				solRecordV1Info.Data.GetBinary()[spl.NameRegistryStateHeaderLen : spl.NameRegistryStateHeaderLen+32],
+				data[spl.NameRegistryStateHeaderLen : spl.NameRegistryStateHeaderLen+32],
 			), nil
 		}
 	}
@@ -195,6 +199,10 @@ func Resolve(
 				}
 			}
 
+			// isAllowed := slices.ContainsFunc(config.ProgramIDs, func(programID solana.PublicKey) bool {
+			// 	return ownerInfo.Value.Owner.Equals(programID)
+			// })
+
 			if isAllowed {
 				return registry.Owner, nil
 			}
@@ -204,8 +212,8 @@ func Resolve(
 				fmt.Sprintf("the Program %s is not allowed", ownerInfo.Value.Owner.String()),
 				nil,
 			)
-
 		}
+
 		return solana.PublicKey{}, spl.NewSNSError(
 			spl.PdaOwnerNotAllowed,
 			"the program is not allowed",

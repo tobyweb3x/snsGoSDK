@@ -14,23 +14,24 @@ func CreateVerifiedTwitterRegistry(
 	conn *rpc.Client,
 	twitterHandle string,
 	verifiedPubKey, payerKey solana.PublicKey,
-	space uint32) ([]solana.Instruction, error) {
+	space uint32) ([]*solana.GenericInstruction, error) {
 
 	hasedTwitterHandle := utils.GetHashedNameSync(twitterHandle)
 	twitterHandleRegistryKey, _, err := utils.GetNameAccountKeySync(
 		hasedTwitterHandle,
 		solana.PublicKey{},
-		spl.TwitterRootParentRegistryKey)
+		spl.TwitterRootParentRegistryKey,
+	)
 	if err != nil {
-
+		return nil, err
 	}
 
 	lamport, err := conn.GetMinimumBalanceForRentExemption(context.TODO(), uint64(space)+uint64(spl.NameRegistryStateHeaderLen), rpc.CommitmentConfirmed)
 	if err != nil {
-
+		return nil, err
 	}
 
-	ixnOne := instructions.CreateInstruction(
+	ixnsOne := instructions.CreateInstruction(
 		spl.NameProgramID,
 		solana.SystemProgramID,
 		twitterHandleRegistryKey,
@@ -38,13 +39,13 @@ func CreateVerifiedTwitterRegistry(
 		payerKey,
 		solana.PublicKey{},
 		spl.TwitterRootParentRegistryKey,
-		spl.TwittwrVerificationAuthority, // Twitter authority acts as owner of the parent for all user-facing registries
+		spl.TwitterVerificationAuthority, // Twitter authority acts as owner of the parent for all user-facing registries
 		hasedTwitterHandle,
 		lamport,
 		space,
 	)
 
-	ixnTwo, err := CreateReverseTwitterRegistry(
+	ixnsTwo, err := CreateReverseTwitterRegistry(
 		conn,
 		twitterHandle,
 		twitterHandleRegistryKey,
@@ -55,10 +56,10 @@ func CreateVerifiedTwitterRegistry(
 		return nil, err
 	}
 
-	var instructionsList []solana.Instruction
-	instructionsList = append(instructionsList, ixnOne)
-	instructionsList = append(instructionsList, ixnTwo...)
+	ixnsSlice := make([]*solana.GenericInstruction, 0, len(ixnsTwo)+1)
+	ixnsSlice = append(ixnsSlice, ixnsOne)
+	ixnsSlice = append(ixnsSlice, ixnsTwo...)
 
-	return instructionsList, nil
+	return ixnsSlice, nil
 
 }

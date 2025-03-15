@@ -47,12 +47,15 @@ func TestFindSubdomains(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		got, err := fn(conn, tt.domain)
-		if err != nil {
-			t.Fatal(err)
-			return
-		}
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := fn(conn, tt.domain)
+			if err != nil {
+				t.Fatal(err)
+				return
+			}
 
-		assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want, got)
+
+		})
 	}
 }

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	spl "snsGoSDK/spl"
 
 	"github.com/gagliardetto/solana-go"
@@ -15,6 +16,8 @@ func ReverseLookup(conn *rpc.Client, nameAccount, parent solana.PublicKey) (stri
 		return "", err
 	}
 
+	fmt.Println(reverseLookupAccount, nameAccount)
+
 	var nm spl.NameRegistryState
 	registry, err := nm.Retrieve(conn, reverseLookupAccount)
 	if err != nil {
@@ -23,3 +26,5 @@ func ReverseLookup(conn *rpc.Client, nameAccount, parent solana.PublicKey) (stri
 
 	return DeserializeReverse(registry.Registry.Data, parent.IsZero())
 }
+
+// 7sHRghUCXnWkPXTsYxB7Bt35eERkPohMefJ17aBJJnXu HPjEbJoeS77Qq31tWuS8pZCsY2yHAW2PcpAKBfETuwLa

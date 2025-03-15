@@ -32,7 +32,7 @@ func getValidationLength(v Validation) (int, error) {
 	case UnverifiedSolana:
 		return 32, nil
 	default:
-		return 0, fmt.Errorf("Invalid validation type")
+		return 0, fmt.Errorf("invalid validation type")
 	}
 }
 
@@ -81,8 +81,7 @@ func NewRecord(
 }
 
 func (r *Record) Deserialize(buff []byte) error {
-	offset := NameRegistryLen
-	var header RecordHeader
+	header, offset := RecordHeader{}, NameRegistryLen
 	err := borsh.Deserialize(&header, buff[offset:offset+RecordHeaderLen])
 	if err != nil {
 		return err

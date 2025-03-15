@@ -15,7 +15,6 @@ import (
 	"github.com/gagliardetto/solana-go/rpc"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
-	// "github.com/stretchr/testify/assert"
 )
 
 func TestRegisterDomainNameV2(t *testing.T) {
@@ -47,7 +46,7 @@ func TestRegisterDomainNameV2(t *testing.T) {
 					return nil, err
 				}
 
-				arr := make([]*solana.GenericInstruction, 0, 7)
+				arr := make([]*solana.GenericInstruction, 0, 6)
 				for range 3 {
 					randomBytes := make([]byte, 10)
 					if _, err := rand.Read(randomBytes); err != nil {
@@ -106,7 +105,8 @@ func TestRegisterDomainNameV2(t *testing.T) {
 
 				return slices.Clip(arr), nil
 			},
-		}, {
+		},
+		{
 			Name: "Register V2 with ref",
 			Fn: func(conn *rpc.Client) ([]*solana.GenericInstruction, error) {
 				buyerTokenAccount, err := spl.GetAssociatedTokenAddressSync(
@@ -190,7 +190,7 @@ func TestRegisterDomainNameV2(t *testing.T) {
 			}
 
 			assert.Nil(t, simTxn.Value.Err)
-			// fmt.Println("Logs:", len(simTxn.Value.Logs))
+			fmt.Println("Logs:", len(simTxn.Value.Logs))
 			// for i, v := range simTxn.Value.Logs {
 			// 	fmt.Printf("%d--->  %s\n", i+1, v)
 			// }

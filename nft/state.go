@@ -10,6 +10,7 @@ import (
 )
 
 type Tag uint8
+
 const (
 	Uninitialized Tag = iota
 	CentralState
@@ -23,7 +24,6 @@ type NftRecord struct {
 	Nonce                       uint8
 	NameAccount, Owner, NftMint solana.PublicKey
 }
-
 
 func NewNftRecord(
 	tag Tag, nonce uint8,
@@ -47,7 +47,7 @@ func (nr *NftRecord) Retrieve(conn *rpc.Client, key solana.PublicKey) error {
 	return borsh.Deserialize(nr, out.Value.Data.GetBinary())
 }
 
-func (nr *NftRecord) FindKey(nameAccount, programId solana.PublicKey) (solana.PublicKey, uint8, error) {
+func (nr NftRecord) FindKey(nameAccount, programId solana.PublicKey) (solana.PublicKey, uint8, error) {
 	return solana.FindProgramAddress(
 		[][]byte{[]byte("nft_record"), nameAccount.Bytes()},
 		programId,

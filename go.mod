@@ -10,6 +10,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/mr-tron/base58 v1.2.0
 	github.com/near/borsh-go v0.3.2-0.20220516180422-1ff87d108454
+	github.com/rivo/uniseg v0.4.7
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/net v0.35.0
 	golang.org/x/sync v0.11.0

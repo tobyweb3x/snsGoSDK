@@ -2,7 +2,6 @@ package bindings
 
 import (
 	"context"
-	"fmt"
 	"slices"
 	"snsGoSDK/instructions"
 	spl "snsGoSDK/spl"
@@ -24,7 +23,8 @@ func RegisterDomainNameV2(
 
 	// basic validation
 	if strings.Contains(name, ".") || strings.TrimSpace(name) != name {
-		return nil, spl.NewSNSError(spl.InvalidDomain, "The domain name is malformed", nil)
+		return nil,
+			spl.NewSNSError(spl.InvalidDomain, "The domain name is malformed", nil)
 	}
 
 	ixns := make([]*solana.GenericInstruction, 0, 2)
@@ -37,7 +37,7 @@ func RegisterDomainNameV2(
 		err             error
 	)
 
-	if refIdx != -1 {
+	if refIdx != -1 && referrerKey.IsZero() {
 		if refTokenAccount, err = spl.GetAssociatedTokenAddressSync(
 			mint,
 			referrerKey,
@@ -50,11 +50,8 @@ func RegisterDomainNameV2(
 			context.TODO(),
 			refTokenAccount,
 		)
-		// if err != nil && !strings.Contains(err.Error(), "not found") {
-		// 	return nil, err
-		// }
 
-		if out == nil || out.Value.Data == nil {
+		if out == nil || out.Value == nil || out.Value.Data == nil {
 			ixn := CreateAssociatedTokenAccountIdempotentInstruction(
 				buyer,
 				refTokenAccount,
@@ -111,10 +108,6 @@ func RegisterDomainNameV2(
 	)
 	if err != nil {
 		return nil, err
-	}
-
-	if refIdx < 0 || refIdx > int(^uint16(0)) {
-		return nil, fmt.Errorf("refIdx out of bounds for uint16: %d", refIdx)
 	}
 
 	var referrerIdxOpt *uint16

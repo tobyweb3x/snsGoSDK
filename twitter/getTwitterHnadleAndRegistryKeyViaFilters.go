@@ -9,7 +9,7 @@ import (
 	"github.com/near/borsh-go"
 )
 
-func getTwitterHandleAndRegistryKeyViaFilters(conn *rpc.Client, verifiedPubkey solana.PublicKey) (solana.PublicKey, string, error) {
+func GetTwitterHandleAndRegistryKeyViaFilters(conn *rpc.Client, verifiedPubkey solana.PublicKey) (solana.PublicKey, string, error) {
 
 	filteredAccounts, err := conn.GetProgramAccountsWithOpts(
 		context.TODO(),
@@ -24,14 +24,14 @@ func getTwitterHandleAndRegistryKeyViaFilters(conn *rpc.Client, verifiedPubkey s
 				},
 				{
 					Memcmp: &rpc.RPCFilterMemcmp{
-						Offset: 64,
+						Offset: 32,
 						Bytes:  verifiedPubkey.Bytes(),
 					},
 				},
 				{
 					Memcmp: &rpc.RPCFilterMemcmp{
 						Offset: 64,
-						Bytes:  spl.TwittwrVerificationAuthority.Bytes(),
+						Bytes:  spl.TwitterVerificationAuthority.Bytes(),
 					},
 				},
 			},
@@ -39,13 +39,13 @@ func getTwitterHandleAndRegistryKeyViaFilters(conn *rpc.Client, verifiedPubkey s
 	)
 
 	if err != nil {
-
+		return solana.PublicKey{}, "", err
 	}
 
 	for _, account := range filteredAccounts {
 		if len(account.Account.Data.GetBinary()) > spl.NameRegistryStateHeaderLen+32 {
 			data := account.Account.Data.GetBinary()[spl.NameRegistryStateHeaderLen:]
-			var rt *ReverseTwitterRegistryState
+			rt := &ReverseTwitterRegistryState{}
 			if err = borsh.Deserialize(rt, data); err != nil {
 				return solana.PublicKey{}, "", err
 			}

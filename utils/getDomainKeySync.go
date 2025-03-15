@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"bytes"
 	"strings"
 
 	spl "snsGoSDK/spl"
@@ -35,7 +34,6 @@ func GetDomainKeySync(domain string, record types.RecordVersion) (DomainKeyResul
 		parentKey   deriveResult
 		subKey      deriveResult
 		result      deriveResult
-		condc       []uint8
 		err         error
 	)
 
@@ -45,16 +43,9 @@ func GetDomainKeySync(domain string, record types.RecordVersion) (DomainKeyResul
 
 	if splitted := strings.Split(domain, "."); len(splitted) == 2 {
 
-		condc = []uint8{0}
-		if (record == types.V2) || (record == types.V1) {
-			condc = []uint8{uint8(record)}
-		}
-
-		prefix := bytes.NewBuffer(condc).String()
-
-		subDomain := splitted[0]  // e.g bonfida
-		rootDomain := splitted[1] // .sol
-
+		prefix := string([]byte{uint8(record)})
+		subDomain := splitted[0]  // e.g dex
+		rootDomain := splitted[1] // e.g  bonfida
 		sub := prefix + subDomain
 
 		if parentKey, err = deriveSync(rootDomain, solana.PublicKey{}, solana.PublicKey{}); err != nil {
@@ -66,11 +57,11 @@ func GetDomainKeySync(domain string, record types.RecordVersion) (DomainKeyResul
 
 		return DomainKeyResult{PubKey: result.PubKey, Hashed: result.Hashed, IsSub: true, Parent: parentKey.PubKey}, nil
 
-	} else if len(splitted) == 3 && record != 0 {
+	} else if len(splitted) == 3 && record != types.VersionUnspecified {
 
-		rootDomain := splitted[2]      // .sol
-		subDomain := splitted[1]       // e.g bonfida
-		subRecordDomain := splitted[0] // e.g dex
+		rootDomain := splitted[2]
+		subDomain := splitted[1]
+		subRecordDomain := splitted[0]
 
 		// Parent key
 		if parentKey, err = deriveSync(rootDomain, spl.RootDomainAccount, solana.PublicKey{}); err != nil {

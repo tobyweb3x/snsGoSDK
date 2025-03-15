@@ -6,7 +6,6 @@ import (
 )
 
 func GetHashedNameSync(name string) []byte {
-	input := spl.HashPrefix + name
-	hashed := sha256.Sum256([]byte(input))
+	hashed := sha256.Sum256([]byte(spl.HashPrefix + name))
 	return hashed[:]
 }

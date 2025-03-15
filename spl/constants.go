@@ -23,7 +23,7 @@ var (
 
 	// The ".twitter" TLD authority.
 	//  TwittwrVerificationAuthority = solana.PublicKeyFromString("FvPH7PrVrLGKPfqaf3xJodFTjZriqrAXXLTVWEorTFBi")
-	TwittwrVerificationAuthority = solana.MustPublicKeyFromBase58("FvPH7PrVrLGKPfqaf3xJodFTjZriqrAXXLTVWEorTFBi")
+	TwitterVerificationAuthority = solana.MustPublicKeyFromBase58("FvPH7PrVrLGKPfqaf3xJodFTjZriqrAXXLTVWEorTFBi")
 
 	// The Registry program ID
 	//  ResgistryProgramID = solana.MustPublicKeyFromBase58("jCebN34bUfdeUYJT13J1yG16XWQpt5PDx6Mse9GUqhR")

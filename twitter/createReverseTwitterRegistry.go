@@ -14,12 +14,12 @@ import (
 func CreateReverseTwitterRegistry(
 	conn *rpc.Client,
 	twitterHandle string,
-	twitterRegistryKey, verifiedPubKey, payerKey solana.PublicKey) ([]solana.Instruction, error) {
+	twitterRegistryKey, verifiedPubKey, payerKey solana.PublicKey) ([]*solana.GenericInstruction, error) {
 
 	hashedVerifiedPubkey := utils.GetHashedNameSync(verifiedPubKey.String())
 	reverseRegistryKey, _, err := utils.GetNameAccountKeySync(
 		hashedVerifiedPubkey,
-		spl.TwittwrVerificationAuthority,
+		spl.TwitterVerificationAuthority,
 		spl.TwitterRootParentRegistryKey,
 	)
 	if err != nil {
@@ -35,21 +35,22 @@ func CreateReverseTwitterRegistry(
 	lamport, err := conn.GetMinimumBalanceForRentExemption(
 		context.TODO(),
 		uint64(len(reverseTwitterRegistryStateBuff)+spl.NameRegistryStateHeaderLen),
-		rpc.CommitmentConfirmed)
+		rpc.CommitmentConfirmed,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	return []solana.Instruction{
+	return []*solana.GenericInstruction{
 		instructions.CreateInstruction(
 			spl.NameProgramID,
 			solana.SystemProgramID,
 			reverseRegistryKey,
 			verifiedPubKey,
 			payerKey,
-			spl.TwittwrVerificationAuthority, // Twitter authority acts as class for all reverse-lookup registries
+			spl.TwitterVerificationAuthority, // Twitter authority acts as class for all reverse-lookup registries
 			spl.TwitterRootParentRegistryKey, // Reverse registries are also children of the root
-			spl.TwittwrVerificationAuthority,
+			spl.TwitterVerificationAuthority,
 			hashedVerifiedPubkey,
 			lamport,
 			uint32(len(reverseTwitterRegistryStateBuff)),
@@ -57,7 +58,7 @@ func CreateReverseTwitterRegistry(
 		instructions.UpdateInstruction(
 			spl.NameProgramID,
 			reverseRegistryKey,
-			spl.TwittwrVerificationAuthority,
+			spl.TwitterVerificationAuthority,
 			0,
 			reverseTwitterRegistryStateBuff,
 		),
