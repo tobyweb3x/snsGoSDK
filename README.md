@@ -4,7 +4,7 @@ This is a rewrite of the [SNS](https://www.sns.id) Typescript [SDK](https://gith
 
 ### WHY GO
 
-Aside from the team’s mission to develop a Go library, JavaScript/Type~~Script~~ is fundamentally a browser-oriented language—it is good software to keep it at that.
+Aside from the team’s mission to develop a Go library, JavaScript/Type~~Shit~~ is fundamentally a browser-oriented language—it is good software to keep it at that.
 
 ### TESTS
 
