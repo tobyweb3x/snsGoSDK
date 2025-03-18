@@ -26,7 +26,11 @@ func CreateVerifiedTwitterRegistry(
 		return nil, err
 	}
 
-	lamport, err := conn.GetMinimumBalanceForRentExemption(context.TODO(), uint64(space)+uint64(spl.NameRegistryStateHeaderLen), rpc.CommitmentConfirmed)
+	lamport, err := conn.GetMinimumBalanceForRentExemption(
+		context.TODO(),
+		uint64(space)+uint64(spl.NameRegistryStateHeaderLen),
+		rpc.CommitmentFinalized,
+	)
 	if err != nil {
 		return nil, err
 	}

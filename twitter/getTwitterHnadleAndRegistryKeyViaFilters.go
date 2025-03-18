@@ -2,6 +2,7 @@ package twitter
 
 import (
 	"context"
+	"errors"
 	spl "snsGoSDK/spl"
 
 	"github.com/gagliardetto/solana-go"
@@ -42,9 +43,16 @@ func GetTwitterHandleAndRegistryKeyViaFilters(conn *rpc.Client, verifiedPubkey s
 		return solana.PublicKey{}, "", err
 	}
 
+	if filteredAccounts == nil {
+		return solana.PublicKey{}, "", errors.New("empty result")
+	}
+
 	for _, account := range filteredAccounts {
-		if len(account.Account.Data.GetBinary()) > spl.NameRegistryStateHeaderLen+32 {
-			data := account.Account.Data.GetBinary()[spl.NameRegistryStateHeaderLen:]
+		if account == nil || account.Account == nil || account.Account.Data == nil {
+			continue
+		}
+		if data := account.Account.Data.GetBinary(); len(data) > spl.NameRegistryStateHeaderLen+32 {
+			data = data[spl.NameRegistryStateHeaderLen:]
 			rt := &ReverseTwitterRegistryState{}
 			if err = borsh.Deserialize(rt, data); err != nil {
 				return solana.PublicKey{}, "", err

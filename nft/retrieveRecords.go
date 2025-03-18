@@ -9,6 +9,7 @@ import (
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/programs/token"
 	"github.com/gagliardetto/solana-go/rpc"
+	"github.com/mr-tron/base58"
 	"github.com/near/borsh-go"
 )
 
@@ -25,13 +26,13 @@ func RetrieveRecords(
 				{
 					Memcmp: &rpc.RPCFilterMemcmp{
 						Offset: 32,
-						Bytes:  owner.Bytes(),
+						Bytes:  solana.Base58(base58.Encode(owner.Bytes())),
 					},
 				},
 				{
 					Memcmp: &rpc.RPCFilterMemcmp{
 						Offset: 64,
-						Bytes:  []byte("2"),
+						Bytes:  solana.Base58(base58.Encode([]byte("2"))),
 					},
 				},
 				{
@@ -45,7 +46,6 @@ func RetrieveRecords(
 	}
 
 	if len(result) == 0 {
-		fmt.Println(result)
 		return nil, errors.New("empty result from call to GetProgramAccount")
 	}
 

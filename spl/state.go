@@ -2,11 +2,15 @@ package spl
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"slices"
+	"sync"
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
 	"github.com/near/borsh-go"
+	"golang.org/x/sync/errgroup"
 )
 
 var schema struct {
@@ -64,22 +68,20 @@ func (ns *NameRegistryState) Retrieve(conn *rpc.Client, nameAccountKey solana.Pu
 
 }
 
-func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []solana.PublicKey) ([]*NameRegistryState, error) {
+func (ns *NameRegistryState) RetrieveBat(conn *rpc.Client, nameAccountKeys []solana.PublicKey) ([]*NameRegistryState, error) {
 	var batchSize = 100
 	nameAccounts := make([]*NameRegistryState, len(nameAccountKeys))
 
 	for i := 0; i < len(nameAccountKeys); i += batchSize {
-		end := i + batchSize
-		if end > len(nameAccountKeys) {
-			end = len(nameAccountKeys)
-		}
+		end := min(i+batchSize, len(nameAccountKeys))
 
 		batchKeys := nameAccountKeys[i:end]
 		out, err := conn.GetMultipleAccounts(context.Background(), batchKeys...)
 		if err != nil {
 			return nil, err
 		}
-		for i := 0; i < len(out.Value); i++ {
+
+		for i := range len(out.Value) {
 			value := out.Value[i]
 			if value == nil || value.Data == nil {
 				nameAccounts[i] = nil
@@ -97,4 +99,58 @@ func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []s
 	}
 
 	return nameAccounts, nil
+}
+
+func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []solana.PublicKey) ([]*NameRegistryState, error) {
+	var (
+		batchSize    = 100
+		mutex        = sync.Mutex{}
+		nameAccounts = make([]*NameRegistryState, 0, len(nameAccountKeys))
+		g, ctx       = errgroup.WithContext(context.Background())
+	)
+
+	for i := 0; i < len(nameAccountKeys); i += batchSize {
+		end := min(i+batchSize, len(nameAccountKeys))
+		batchKeys := nameAccountKeys[i:end]
+
+		g.Go(func() error {
+			out, err := conn.GetMultipleAccounts(ctx, batchKeys...)
+			if err != nil {
+				return err
+			}
+
+			if out == nil || out.Value == nil {
+				return errors.New("empty result")
+			}
+
+			tempResults := make([]*NameRegistryState, len(out.Value))
+			for j, value := range out.Value {
+				if value == nil || value.Data == nil {
+					tempResults[j] = nil
+					continue
+				}
+
+				var n = &NameRegistryState{}
+				if err := n.Deserialize(value.Data.GetBinary()); err != nil {
+					tempResults[j] = nil
+					continue
+				}
+
+				tempResults[j] = n
+			}
+
+			// Lock only when appending to shared slice
+			mutex.Lock()
+			nameAccounts = append(nameAccounts, tempResults...)
+			mutex.Unlock()
+
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	return slices.Clip(nameAccounts), nil
 }

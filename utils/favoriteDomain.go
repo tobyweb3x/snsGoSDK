@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"snsGoSDK/nft"
 	spl "snsGoSDK/spl"
 	"strings"
@@ -30,7 +29,7 @@ func GetFavoriteDoamin(conn *rpc.Client, owner solana.PublicKey) (GetPrimaryDoma
 func GetPrimaryDomain(conn *rpc.Client, owner solana.PublicKey) (GetPrimaryDomainResult, error) {
 
 	var fd spl.FavoriteDmain
-	favKey, err := fd.GetKey(spl.NameOffersID, owner)
+	favKey, err := fd.GetKeySync(spl.NameOffersID, owner)
 	if err != nil {
 		return GetPrimaryDomainResult{}, err
 	}
@@ -95,7 +94,7 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 	favKeys := make([]solana.PublicKey, 0, len(wallets))
 	for _, v := range wallets {
 		var fd spl.FavoriteDmain
-		favKey, err := fd.GetKey(spl.NameOffersID, v)
+		favKey, err := fd.GetKeySync(spl.NameOffersID, v)
 		if err != nil {
 			favKeys = append(favKeys, solana.PublicKey{})
 			continue
@@ -118,11 +117,11 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 
 	favDomains := make([]solana.PublicKey, 0, len(out.Value))
 	for _, v := range out.Value {
-		var fd spl.FavoriteDmain
 		if v == nil || v.Data == nil {
 			favDomains = append(favDomains, solana.PublicKey{})
 			continue
 		}
+		var fd spl.FavoriteDmain
 		if err := borsh.Deserialize(&fd, v.Data.GetBinary()); err != nil {
 			favDomains = append(favDomains, solana.PublicKey{})
 			continue
@@ -222,44 +221,41 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 		return nil, err
 	}
 
-
-	for i := 0; i < len(wallets); i++ {
+	for i, wallet := range wallets {
 		var (
 			domainInfo       = domainInfos.Value[i]
 			rev              = revs[i]
 			parentRevAccount = parentRevs[i]
 			tokenAcc         = tokenAccs[i]
-			parentRev        string
+			parentRev        = ""
 		)
+
 		if domainInfo == nil || rev == nil {
 			result = append(result, "")
 			continue
 		}
 
-		if parentRevAccount != nil && parentRevAccount.Owner.Equals(spl.NameProgramID) {
-			if len(parentRevAccount.Owner.Bytes()) > 96 {
-				str, _ := DeserializeReverse(parentRevAccount.Owner.Bytes()[96:], false)
-				parentRev = fmt.Sprintf(".%s", str)
-			}
-		}
-
-		if len(domainInfo.Data.GetBinary()) < 64 {
-			result = append(result, "")
-			continue
-		}
-
-		nativeOwner := solana.PublicKeyFromBytes(domainInfo.Data.GetBinary()[32:64])
-		if nativeOwner.Equals(wallets[i]) {
-			if len(rev.Owner.Bytes()) > 96 {
-				str, err := DeserializeReverse(rev.Owner.Bytes()[96:], false)
-				if err != nil {
-					result = append(result, "")
-					continue
+		if parentRevAccount != nil && parentRevAccount.Data != nil &&
+			parentRevAccount.Owner.Equals(spl.NameProgramID) {
+			if data := parentRevAccount.Data.GetBinary(); len(data) >= 96 {
+				if str, err := DeserializeReverse(data[96:], false); err == nil && str != "" {
+					parentRev += "." + str
 				}
-				result = append(result, str)
-				continue
 			}
-			//  TODO: incomplete
+		}
+
+		if domainInfo.Data != nil {
+			if data := domainInfo.Data.GetBinary(); len(data) >= 64 {
+				nativeOwner := solana.PublicKeyFromBytes(data[32:64])
+				if nativeOwner.Equals(wallet) && rev.Data != nil {
+					if data := rev.Data.GetBinary(); len(data) >= 96 {
+						if str, err := DeserializeReverse(data[96:], true); err == nil {
+							result = append(result, str+parentRev)
+							continue
+						}
+					}
+				}
+			}
 		}
 
 		// Either tokenized or stale
@@ -268,30 +264,20 @@ func GetMultipleFavoriteDomain(conn *rpc.Client, wallets []solana.PublicKey) ([]
 			continue
 		}
 
-		var decoded token.Account
-		if err := bin.NewBorshDecoder(tokenAcc.Data.GetBinary()).Decode(&decoded); err != nil {
-			result = append(result, "")
-			continue
-		}
-
 		// Tokenized
-		if decoded.Amount == 1 {
-			var data bytes.Buffer
-			if len(rev.Data.GetBinary()) > 96 {
-				data.Write(rev.Data.GetBinary()[96:])
+		var decoded token.Account
+		if err := bin.NewBorshDecoder(tokenAcc.Data.GetBinary()).Decode(&decoded); err == nil {
+			if decoded.Amount == 1 && rev.Data != nil {
+				if data := rev.Data.GetBinary(); len(data) >= 96 {
+					if str, err := DeserializeReverse(data[96:], false); err == nil {
+						result = append(result, str+parentRev)
+						continue
+					}
+				}
 			}
-			data.WriteString(parentRev)
-			str, err := DeserializeReverse(data.Bytes(), false)
-			if err != nil {
-				result = append(result, "")
-				continue
-			}
-			result = append(result, fmt.Sprintf("%s%s", str, parentRev))
-			continue
 		}
 
 		// Stale
-
 		result = append(result, "")
 	}
 

@@ -1,8 +1,6 @@
 package instructions
 
 import (
-	"bytes"
-
 	"github.com/gagliardetto/solana-go"
 	"github.com/near/borsh-go"
 )
@@ -41,9 +39,6 @@ func (cri *CreateReverseInstruction) GetInstruction(
 		return nil, err
 	}
 
-	var dataBuffer bytes.Buffer
-	dataBuffer.Write(data)
-
 	keys := solana.AccountMetaSlice{
 		{PublicKey: namingServiceProgram, IsSigner: false, IsWritable: false},
 		{PublicKey: rootDomain, IsSigner: false, IsWritable: false},
@@ -65,6 +60,6 @@ func (cri *CreateReverseInstruction) GetInstruction(
 	return solana.NewInstruction(
 		programId,
 		keys,
-		dataBuffer.Bytes(),
+		data,
 	), nil
 }

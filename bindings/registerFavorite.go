@@ -25,7 +25,7 @@ func RegisterFavorite(
 	}
 
 	var fd spl.FavoriteDmain
-	favkey, err := fd.GetKey(spl.NameOffersID, owner)
+	favkey, err := fd.GetKeySync(spl.NameOffersID, owner)
 	if err != nil {
 		return nil, err
 	}

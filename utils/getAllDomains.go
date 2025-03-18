@@ -38,10 +38,10 @@ func GetAllDomains(conn *rpc.Client, wallet solana.PublicKey) ([]solana.PublicKe
 	if err != nil {
 		return nil, err
 	}
-
+	
 	container := make([]solana.PublicKey, 0, len(out))
-	for i := 0; i < len(out); i++ {
-		container = append(container, out[i].Pubkey)
+	for _, v := range out {
+		container = append(container, v.Pubkey)
 	}
 
 	return container, nil

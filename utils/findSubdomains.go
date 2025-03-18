@@ -11,9 +11,8 @@ import (
 )
 
 func FindSubdomains(conn *rpc.Client, parentKey solana.PublicKey) ([]string, error) {
-
-	g, ctx := errgroup.WithContext(context.Background())
 	var (
+		g, ctx = errgroup.WithContext(context.Background())
 		reverse,
 		subs rpc.GetProgramAccountsResult
 	)

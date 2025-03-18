@@ -49,14 +49,13 @@ func TestGetRecordV2(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("getRecordV2:%s", tt.name),
-			func(t *testing.T) {
-				got, err := recordv2.GetRecordV2(conn, domian, tt.record, true)
-				if err != nil {
-					t.Fatalf("getRecordV2:%s failed: error: %s", tt.name, err.Error())
-					return
-				}
-				assert.Equal(t, tt.want, got.DeserializeContent)
-			})
+		t.Run(fmt.Sprintf("getRecordV2:%s", tt.name), func(t *testing.T) {
+			got, err := recordv2.GetRecordV2(conn, domian, tt.record, true)
+			if err != nil {
+				t.Fatalf("getRecordV2:%s failed: error: %s", tt.name, err.Error())
+				return
+			}
+			assert.Equal(t, tt.want, got.DeserializeContent)
+		})
 	}
 }

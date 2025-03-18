@@ -25,11 +25,6 @@ func TestGetTwitterRegistry(t *testing.T) {
 		},
 	)
 
-	// tests :=[]struct{
-	// 	name string
-	// 	handle string
-	// }{}
-
 	t.Run("getTwitterRegistry", func(t *testing.T) {
 		got, err :=twitter.GetTwitterRegistry(conn, "plenthor")
 		if err != nil {

@@ -38,15 +38,14 @@ func TestReverseTwitterRegistryStateRetrive(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("ReverseTwitterRegistryState Retrive method: %s", tt.name),
-			func(t *testing.T) {
-				rts := twitter.ReverseTwitterRegistryState{}
-				if err := rts.Retrieve(conn, tt.reverseTwitterAccountKey); err != nil {
-					t.Fatal(err)
-					return
-				}
+		t.Run(fmt.Sprintf("ReverseTwitterRegistryState Retrive method: %s", tt.name), func(t *testing.T) {
+			rts := twitter.ReverseTwitterRegistryState{}
+			if err := rts.Retrieve(conn, tt.reverseTwitterAccountKey); err != nil {
+				t.Fatal(err)
+				return
+			}
 
-				assert.Equal(t, tt.want, rts.TwitterHandle)
-			})
+			assert.Equal(t, tt.want, rts.TwitterHandle)
+		})
 	}
 }

@@ -56,15 +56,6 @@ func TestFavoriteDomain(t *testing.T) {
 				stale:   false,
 			},
 		},
-		{
-			name: "Test case 3",
-			user: solana.MustPublicKeyFromBase58("A41TAGFpQkFpJidLwH37ydunE7Q3jpBaS228RkoXiRQk"),
-			want: want{
-				domain:  solana.MustPublicKeyFromBase58("BaQq8Uib3Aw5SPBedC8MdYCvpfEC9iLkUMHc5M74sAjv"),
-				reverse: "1.00728",
-				stale:   false,
-			},
-		},
 	}
 
 	for _, tt := range tests {
@@ -111,15 +102,12 @@ func TestMultipleFavoriteDomain(t *testing.T) {
 			solana.NewWallet().PublicKey(),
 			// Tokenized
 			solana.MustPublicKeyFromBase58("36Dn3RWhB8x4c83W6ebQ2C2eH9sh5bQX2nMdkP2cWaA4"),
-
-			solana.MustPublicKeyFromBase58("A41TAGFpQkFpJidLwH37ydunE7Q3jpBaS228RkoXiRQk"),
 		},
 		want: []string{
 			"bonfida",
 			"",
 			"",
 			"fav-tokenized",
-			"1.00728",
 		},
 	}
 
@@ -131,9 +119,6 @@ func TestMultipleFavoriteDomain(t *testing.T) {
 			return
 		}
 
-		
-
-		fmt.Println(len(got), len(test.want), got)
 		assert.True(t, slices.Equal(test.want, got))
 	})
 

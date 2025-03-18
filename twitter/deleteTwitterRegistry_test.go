@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateVerifiedTwitterRegistry(t *testing.T) {
+func TestDeleteTwitterRegistry(t *testing.T) {
 	if err := godotenv.Load(); err != nil {
 		t.Fatalf("cannot load env file: error: %s", err.Error())
 	}
@@ -35,17 +35,21 @@ func TestCreateVerifiedTwitterRegistry(t *testing.T) {
 		fn   func(*rpc.Client) ([]*solana.GenericInstruction, error)
 	}{
 		{
-			name: "Test case 1/CreateVerifiedTwitterRegistry",
+			name: "Test case 1/Create & delete instruction",
 			fn: func(conn *rpc.Client) ([]*solana.GenericInstruction, error) {
 				bytes := make([]byte, 10)
 				if _, err := rand.Read(bytes); err != nil {
 					return nil, fmt.Errorf("err generating random values: error: %v", err)
 				}
 
+				handle := hex.EncodeToString(bytes)
+				user := solana.NewWallet().PublicKey()
+				// fmt.Println("user----", user.String())
+
 				ixnsOne, err := twitter.CreateVerifiedTwitterRegistry(
 					conn,
-					hex.EncodeToString(bytes),
-					solana.NewWallet().PublicKey(),
+					handle,
+					user,
 					payer,
 					10,
 				)
@@ -53,8 +57,17 @@ func TestCreateVerifiedTwitterRegistry(t *testing.T) {
 					return nil, err
 				}
 
-				ixnSlice := make([]*solana.GenericInstruction, 0, len(ixnsOne))
+				ixnsTwo, err := twitter.DeleteTwitterRegistry(
+					handle,
+					user,
+				)
+				if err != nil {
+					return nil, err
+				}
+
+				ixnSlice := make([]*solana.GenericInstruction, 0, len(ixnsOne)+len(ixnsTwo))
 				ixnSlice = append(ixnSlice, ixnsOne...)
+				ixnSlice = append(ixnSlice, ixnsTwo...)
 
 				return ixnSlice, nil
 			},
@@ -69,15 +82,15 @@ func TestCreateVerifiedTwitterRegistry(t *testing.T) {
 				return
 			}
 
-			recent, err := conn.GetLatestBlockhash(context.TODO(), rpc.CommitmentFinalized)
-			if err != nil {
-				t.Fatalf("getLatestBlockhash failed: error: %v", err)
-				return
-			}
-
 			instructions := make([]solana.Instruction, len(ixns))
 			for i, ixn := range ixns {
 				instructions[i] = ixn
+			}
+
+			recent, err := conn.GetLatestBlockhash(context.TODO(), rpc.CommitmentConfirmed)
+			if err != nil {
+				t.Fatalf("getLatestBlockhash failed: error: %v", err)
+				return
 			}
 
 			tx, err := solana.NewTransaction(
@@ -104,7 +117,9 @@ func TestCreateVerifiedTwitterRegistry(t *testing.T) {
 			simTxn, err := conn.SimulateTransactionWithOpts(
 				context.TODO(),
 				tx,
-				&rpc.SimulateTransactionOpts{},
+				&rpc.SimulateTransactionOpts{
+					Commitment: rpc.CommitmentConfirmed,
+				},
 			)
 			if err != nil {
 				t.Fatalf("simulateTransactionWithOpts failed: error: %v", err)
@@ -112,6 +127,22 @@ func TestCreateVerifiedTwitterRegistry(t *testing.T) {
 			}
 
 			assert.Nil(t, simTxn.Value.Err)
+			// arr, _ := tx.AccountMetaList()
+			// for _, v := range tx.Message.Instructions {
+			// 	fmt.Println("programId---", arr[v.ProgramIDIndex])
+			// 	fmt.Println("keys----", len(v.Accounts))
+			// 	for _, v := range v.Accounts {
+			// 		fmt.Printf("%+v\n", *arr[v])
+			// 	}
+			// 	fmt.Println("data----", v.Data)
+			// 	fmt.Println()
+			// }
+
+			// fmt.Println("Logs:", len(simTxn.Value.Logs))
+			// for i, v := range simTxn.Value.Logs {
+			// 	fmt.Printf("%d--->  %s\n", i+1, v)
+			// }
+
 		})
 	}
 }

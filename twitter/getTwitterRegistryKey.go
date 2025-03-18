@@ -8,11 +8,11 @@ import (
 )
 
 func GetTwitterRegistryKey(twitterHandle string) (solana.PublicKey, error) {
-	hashedTwitterHandle := utils.GetHashedNameSync(twitterHandle)
 	out, _, err := utils.GetNameAccountKeySync(
-		hashedTwitterHandle,
+		utils.GetHashedNameSync(twitterHandle),
 		solana.PublicKey{},
-		spl.TwitterRootParentRegistryKey)
+		spl.TwitterRootParentRegistryKey,
+	)
 	if err != nil {
 		return solana.PublicKey{}, err
 	}

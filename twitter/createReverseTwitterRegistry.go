@@ -26,7 +26,10 @@ func CreateReverseTwitterRegistry(
 		return nil, err
 	}
 
-	rt := NewReverseTwitterRegistryState([32]byte(twitterRegistryKey.Bytes()), twitterHandle)
+	rt := NewReverseTwitterRegistryState(
+		[32]byte(twitterRegistryKey.Bytes()),
+		twitterHandle,
+	)
 	reverseTwitterRegistryStateBuff, err := borsh.Serialize(*rt)
 	if err != nil {
 		return nil, err

@@ -124,16 +124,15 @@ func TestRecords(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		t.Run(fmt.Sprintf("Records:%s", test.name),
-			func(t *testing.T) {
-				// t.Parallel()
-				got, err := test.fn(conn, test.domain)
-				if err != nil {
-					t.Fatalf("failed to get record-%s: error: %v", test.name, err)
-					return
-				}
+		t.Run(fmt.Sprintf("Records:%s", test.name), func(t *testing.T) {
+			// t.Parallel()
+			got, err := test.fn(conn, test.domain)
+			if err != nil {
+				t.Fatalf("failed to get record-%s: error: %v", test.name, err)
+				return
+			}
 
-				assert.Equal(t, test.expect, got)
-			})
+			assert.Equal(t, test.expect, got)
+		})
 	}
 }

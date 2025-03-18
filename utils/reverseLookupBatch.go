@@ -10,8 +10,8 @@ import (
 func ReverseLookUpBatch(conn *rpc.Client, nameAccounts []solana.PublicKey) ([]string, error) {
 
 	reverseLookupAccounts := make([]solana.PublicKey, 0, len(nameAccounts))
-	for i := 0; i < len(nameAccounts); i++ {
-		hashedReverseLookup := GetHashedNameSync(nameAccounts[i].String())
+	for _, v := range nameAccounts {
+		hashedReverseLookup := GetHashedNameSync(v.String())
 		reverseLookupAccount, _, err := GetNameAccountKeySync(hashedReverseLookup, spl.ReverseLookupClass, solana.PublicKey{})
 		if err != nil {
 			return nil, err
@@ -26,8 +26,8 @@ func ReverseLookUpBatch(conn *rpc.Client, nameAccounts []solana.PublicKey) ([]st
 	}
 
 	container := make([]string, 0, len(names))
-	for i := 0; i < len(names); i++ {
-		if names[i] == nil {
+	for i, name := range names {
+		if name == nil || name.Data == nil {
 			container = append(container, "")
 			continue
 		}

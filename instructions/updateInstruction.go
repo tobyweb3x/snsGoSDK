@@ -17,11 +17,8 @@ func UpdateInstruction(
 	dataBuffer := bytes.NewBuffer(nil)
 
 	dataBuffer.WriteByte(1)
-
 	binary.Write(dataBuffer, binary.LittleEndian, offset)
-
 	binary.Write(dataBuffer, binary.LittleEndian, uint32(len(inputData)))
-
 	dataBuffer.Write(inputData)
 
 	keys := []*solana.AccountMeta{

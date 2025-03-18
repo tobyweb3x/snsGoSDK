@@ -28,11 +28,12 @@ func TestBurnDomain(t *testing.T) {
 
 	t.Run("BurnDomain", func(t *testing.T) {
 
-		owner := solana.MustPublicKeyFromBase58("3Wnd5Df69KitZfUoPYZU438eFRNwGHkhLnSAWL65PxJX")
+		owner, burnDst := solana.MustPublicKeyFromBase58("HKKp49qGWXd639QsuH7JiLijfVW5UtCVY4s1n2HANwEA"),
+			solana.MustPublicKeyFromBase58("3Wnd5Df69KitZfUoPYZU438eFRNwGHkhLnSAWL65PxJX")
 		ix, err := bindings.BurnDomain(
-			"1automotive",
+			"bonfida",
 			owner,
-			owner,
+			burnDst,
 		)
 		if err != nil {
 			t.Fatal(err)

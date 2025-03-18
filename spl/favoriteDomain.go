@@ -29,8 +29,8 @@ func (fd *FavoriteDmain) Retrieve(conn *rpc.Client, key solana.PublicKey) error 
 	return borsh.Deserialize(fd, accountInfo.Value.Data.GetBinary())
 }
 
-//  GetKey can be used to derive the key of a favorite domain
-func (fd FavoriteDmain) GetKey(programId, owner solana.PublicKey) (solana.PublicKey, error) {
+// GetKeySync can be used to derive the key of a favorite domain
+func (fd FavoriteDmain) GetKeySync(programId, owner solana.PublicKey) (solana.PublicKey, error) {
 	out, _, err := solana.FindProgramAddress(
 		[][]byte{
 			[]byte("favourite_domain"),
