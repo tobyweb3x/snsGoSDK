@@ -26,7 +26,7 @@ func TestGetDomainMint(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		domain, err := utils.GetDomainKeySync(tt.domain, types.VersionUnspecified)
+		domain, err := utils.GetDomainKeySync(tt.domain, types.V0)
 		if err != nil {
 			t.Fatal(err)
 			return

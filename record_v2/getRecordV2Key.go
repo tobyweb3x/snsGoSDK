@@ -10,7 +10,7 @@ import (
 )
 
 func GetRecordV2Key(domain string, record types.Record) (solana.PublicKey, error) {
-	out, err := utils.GetDomainKeySync(domain, types.VersionUnspecified)
+	out, err := utils.GetDomainKeySync(domain, types.V0)
 	if err != nil {
 		return solana.PublicKey{}, err
 	}

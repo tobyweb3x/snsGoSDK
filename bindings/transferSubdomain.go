@@ -18,7 +18,7 @@ func TransferSubdomain(
 	isParentOwnerSigner bool,
 ) (*solana.GenericInstruction, error) {
 
-	out, err := utils.GetDomainKeySync(subdomain, types.VersionUnspecified)
+	out, err := utils.GetDomainKeySync(subdomain, types.V0)
 	if err != nil {
 		return nil, err
 	}

@@ -14,7 +14,7 @@ func UpdateInstruction(
 	offset uint32,
 	inputData []byte,
 ) *solana.GenericInstruction {
-	dataBuffer := bytes.NewBuffer(nil)
+	dataBuffer := new(bytes.Buffer)
 
 	dataBuffer.WriteByte(1)
 	binary.Write(dataBuffer, binary.LittleEndian, offset)

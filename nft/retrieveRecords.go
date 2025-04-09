@@ -2,6 +2,7 @@ package nft
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
 	"fmt"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/programs/token"
 	"github.com/gagliardetto/solana-go/rpc"
-	"github.com/mr-tron/base58"
 	"github.com/near/borsh-go"
 )
 
@@ -17,7 +17,8 @@ func RetrieveRecords(
 	conn *rpc.Client,
 	owner solana.PublicKey,
 ) ([]NftRecord, error) {
-
+	data := make([]byte, 8)
+	binary.LittleEndian.PutUint64(data, 2)
 	result, err := conn.GetProgramAccountsWithOpts(
 		context.TODO(),
 		solana.TokenProgramID,
@@ -26,13 +27,13 @@ func RetrieveRecords(
 				{
 					Memcmp: &rpc.RPCFilterMemcmp{
 						Offset: 32,
-						Bytes:  solana.Base58(base58.Encode(owner.Bytes())),
+						Bytes:  owner.Bytes(),
 					},
 				},
 				{
 					Memcmp: &rpc.RPCFilterMemcmp{
 						Offset: 64,
-						Bytes:  solana.Base58(base58.Encode([]byte("2"))),
+						Bytes:  data,
 					},
 				},
 				{

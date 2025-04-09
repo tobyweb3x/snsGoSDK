@@ -37,7 +37,7 @@ func RegisterDomainNameV2(
 		err             error
 	)
 
-	if refIdx != -1 && referrerKey.IsZero() {
+	if refIdx != -1 && !referrerKey.IsZero() {
 		if refTokenAccount, err = spl.GetAssociatedTokenAddressSync(
 			mint,
 			referrerKey,

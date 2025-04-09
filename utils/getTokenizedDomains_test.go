@@ -17,6 +17,7 @@ func TestGetTokenizedDomains(t *testing.T) {
 		t.Fatalf("cannot load env file: error: %s", err.Error())
 	}
 	conn := rpc.New(os.Getenv("RPC_ENDPOINT"))
+	// conn := rpc.New(rpc.MainNetBeta.RPC)
 	t.Cleanup(
 		func() {
 			if err := conn.Close(); err != nil {

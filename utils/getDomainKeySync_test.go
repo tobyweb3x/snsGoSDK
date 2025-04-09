@@ -50,7 +50,7 @@ func TestGetDomainKeySync(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("GetDomainKeySync:%s", tt.name), func(t *testing.T) {
-			got, err := utils.GetDomainKeySync(tt.domain, types.VersionUnspecified)
+			got, err := utils.GetDomainKeySync(tt.domain, types.V0)
 			if err != nil {
 				t.Fatal(err)
 				return

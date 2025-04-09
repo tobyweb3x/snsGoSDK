@@ -21,7 +21,7 @@ func CreateInstruction(
 
 	var (
 		dataBuffer bytes.Buffer
-		keys = make(solana.AccountMetaSlice, 0, 7)
+		keys       = make(solana.AccountMetaSlice, 0, 7)
 	)
 	dataBuffer.WriteByte(0)
 	binary.Write(&dataBuffer, binary.LittleEndian, uint32(len(hashedName)))
@@ -29,7 +29,7 @@ func CreateInstruction(
 	binary.Write(&dataBuffer, binary.LittleEndian, lamports)
 	binary.Write(&dataBuffer, binary.LittleEndian, space)
 
-	keys = append(keys,  solana.AccountMetaSlice{
+	keys = append(keys, solana.AccountMetaSlice{
 		{PublicKey: systemProgramId, IsSigner: false, IsWritable: false},
 		{PublicKey: payerKey, IsSigner: true, IsWritable: true},
 		{PublicKey: nameKey, IsSigner: false, IsWritable: true},
@@ -39,13 +39,13 @@ func CreateInstruction(
 	if !nameClassKey.IsZero() {
 		keys = append(keys, &solana.AccountMeta{PublicKey: nameClassKey, IsSigner: true, IsWritable: false})
 	} else {
-		keys = append(keys, &solana.AccountMeta{PublicKey: solana.SystemProgramID, IsSigner: false, IsWritable: false})
+		keys = append(keys, &solana.AccountMeta{PublicKey: solana.PublicKey{}, IsSigner: false, IsWritable: false})
 	}
 
 	if !nameParent.IsZero() {
 		keys = append(keys, &solana.AccountMeta{PublicKey: nameParent, IsSigner: false, IsWritable: false})
 	} else {
-		keys = append(keys, &solana.AccountMeta{PublicKey: solana.SystemProgramID, IsSigner: false, IsWritable: false})
+		keys = append(keys, &solana.AccountMeta{PublicKey: solana.PublicKey{}, IsSigner: false, IsWritable: false})
 	}
 
 	if !nameParentOwner.IsZero() {

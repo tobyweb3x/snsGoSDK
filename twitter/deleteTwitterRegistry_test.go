@@ -19,8 +19,8 @@ func TestDeleteTwitterRegistry(t *testing.T) {
 	if err := godotenv.Load(); err != nil {
 		t.Fatalf("cannot load env file: error: %s", err.Error())
 	}
-	// conn := rpc.New(os.Getenv("RPC_ENDPOINT"))
-	conn := rpc.New(rpc.MainNetBeta_RPC)
+	conn := rpc.New(os.Getenv("RPC_ENDPOINT"))
+	// conn := rpc.New(rpc.MainNetBeta_RPC)
 	t.Cleanup(
 		func() {
 			if err := conn.Close(); err != nil {
@@ -44,7 +44,6 @@ func TestDeleteTwitterRegistry(t *testing.T) {
 
 				handle := hex.EncodeToString(bytes)
 				user := solana.NewWallet().PublicKey()
-				// fmt.Println("user----", user.String())
 
 				ixnsOne, err := twitter.CreateVerifiedTwitterRegistry(
 					conn,
@@ -127,22 +126,21 @@ func TestDeleteTwitterRegistry(t *testing.T) {
 			}
 
 			assert.Nil(t, simTxn.Value.Err)
-			// arr, _ := tx.AccountMetaList()
-			// for _, v := range tx.Message.Instructions {
-			// 	fmt.Println("programId---", arr[v.ProgramIDIndex])
-			// 	fmt.Println("keys----", len(v.Accounts))
-			// 	for _, v := range v.Accounts {
-			// 		fmt.Printf("%+v\n", *arr[v])
-			// 	}
-			// 	fmt.Println("data----", v.Data)
-			// 	fmt.Println()
-			// }
+			arr, _ := tx.AccountMetaList()
+			for _, v := range tx.Message.Instructions {
+				fmt.Println("programId---", arr[v.ProgramIDIndex])
+				fmt.Println("keys----", len(v.Accounts))
+				for _, v := range v.Accounts {
+					fmt.Printf("%+v\n", *arr[v])
+				}
+				fmt.Println("data----", v.Data)
+				fmt.Println()
+			}
 
-			// fmt.Println("Logs:", len(simTxn.Value.Logs))
-			// for i, v := range simTxn.Value.Logs {
-			// 	fmt.Printf("%d--->  %s\n", i+1, v)
-			// }
-
+			fmt.Println("Logs:", len(simTxn.Value.Logs))
+			for i, v := range simTxn.Value.Logs {
+				fmt.Printf("%d--->  %s\n", i+1, v)
+			}
 		})
 	}
 }

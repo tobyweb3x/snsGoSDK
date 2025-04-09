@@ -32,12 +32,12 @@ func TestTransferSubdomain(t *testing.T) {
 	}{
 		{
 			name:                "Transfer sub - isParentOwnerSigner set to false",
-			feePayer:            solana.MustPublicKeyFromBase58("A41TAGFpQkFpJidLwH37ydunE7Q3jpBaS228RkoXiRQk"),
+			feePayer:            solana.MustPublicKeyFromBase58("HKKp49qGWXd639QsuH7JiLijfVW5UtCVY4s1n2HANwEA"),
 			isParentOwnerSigner: false,
 		},
 		{
 			name:                "Transfer sub - isParentOwnerSigner set to true",
-			feePayer:            solana.MustPublicKeyFromBase58("A41TAGFpQkFpJidLwH37ydunE7Q3jpBaS228RkoXiRQk"),
+			feePayer:            solana.MustPublicKeyFromBase58("HKKp49qGWXd639QsuH7JiLijfVW5UtCVY4s1n2HANwEA"),
 			isParentOwnerSigner: true,
 		},
 	}
@@ -45,7 +45,7 @@ func TestTransferSubdomain(t *testing.T) {
 	fn := func(conn *rpc.Client, isParentOwnerSigner bool) ([]*solana.GenericInstruction, error) {
 		ixn, err := bindings.TransferSubdomain(
 			conn,
-			"test.0x33.sol",
+			"test.bonfida.sol",
 			solana.PublicKey{},
 			solana.PublicKey{},
 			isParentOwnerSigner,
@@ -106,7 +106,7 @@ func TestTransferSubdomain(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, out.Value.Err, "AccountNotFound")
+			assert.Equal(t, out.Value.Err, nil)
 			// assert.Nil(t, out.Value.Err)
 		})
 

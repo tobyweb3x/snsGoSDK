@@ -38,7 +38,7 @@ func TestRegisterWithNFT(t *testing.T) {
 		}
 		domain := hex.EncodeToString(bytes)
 
-		out, err := utils.GetDomainKeySync(domain, types.VersionUnspecified)
+		out, err := utils.GetDomainKeySync(domain, types.V0)
 		if err != nil {
 			t.Fatal(err)
 		}

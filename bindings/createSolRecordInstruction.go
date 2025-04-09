@@ -22,7 +22,7 @@ func CreateSolRecordInstruction(
 
 	out, err := utils.GetDomainKeySync(
 		fmt.Sprintf("%s.%s", types.SOL, domain),
-		types.VersionUnspecified,
+		types.V0,
 	)
 	if err != nil {
 		return nil, err
