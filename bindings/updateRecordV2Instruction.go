@@ -26,7 +26,7 @@ func UpdateRecordV2Instruction(
 	}
 	if out.IsSub {
 		out2, err := utils.GetDomainKeySync(
-			domain, types.VersionUnspecified,
+			domain, types.V0,
 		)
 		if err != nil {
 			return nil, err

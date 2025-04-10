@@ -15,6 +15,7 @@ func GetAllDomains(conn *rpc.Client, wallet solana.PublicKey) ([]solana.PublicKe
 	out, err := conn.GetProgramAccountsWithOpts(context.Background(),
 		spl.NameProgramID,
 		&rpc.GetProgramAccountsOpts{
+			Encoding: solana.EncodingBase58,
 			DataSlice: &rpc.DataSlice{
 				Offset: &zero,
 				Length: &zero,
@@ -38,7 +39,7 @@ func GetAllDomains(conn *rpc.Client, wallet solana.PublicKey) ([]solana.PublicKe
 	if err != nil {
 		return nil, err
 	}
-	
+
 	container := make([]solana.PublicKey, 0, len(out))
 	for _, v := range out {
 		container = append(container, v.Pubkey)

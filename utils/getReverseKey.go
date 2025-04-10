@@ -9,7 +9,7 @@ import (
 
 // GetReverseKey can be used to get the key of the reverse account
 func GetReverseKey(domain string, isSub bool) (solana.PublicKey, error) {
-	out, err := GetDomainKeySync(domain, types.VersionUnspecified)
+	out, err := GetDomainKeySync(domain, types.V0)
 	if err != nil {
 		return solana.PublicKey{}, err
 	}

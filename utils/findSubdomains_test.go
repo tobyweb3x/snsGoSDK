@@ -3,6 +3,7 @@ package utils_test
 import (
 	"fmt"
 	"os"
+	"slices"
 	"snsGoSDK/types"
 	"snsGoSDK/utils"
 	"testing"
@@ -32,13 +33,13 @@ func TestFindSubdomains(t *testing.T) {
 	}{
 		{
 			name:   "Test case 1",
-			domain: "bonfida",
-			want:   []string{"naming", "test"},
+			domain: "67679",
+			want:   []string{"booya", "bullish", "hollaaa", "testing"},
 		},
 	}
 
 	fn := func(conn *rpc.Client, domain string) ([]string, error) {
-		out, err := utils.GetDomainKeySync(domain, types.VersionUnspecified)
+		out, err := utils.GetDomainKeySync(domain, types.V0)
 		if err != nil {
 			return nil, fmt.Errorf("getDomainKeySync err: %s", err.Error())
 		}
@@ -54,6 +55,7 @@ func TestFindSubdomains(t *testing.T) {
 				return
 			}
 
+			slices.Sort(got)
 			assert.Equal(t, tt.want, got)
 
 		})

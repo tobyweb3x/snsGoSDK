@@ -2,3 +2,4 @@
 snsGoSDK
 .vscode/
 .env
+main.go

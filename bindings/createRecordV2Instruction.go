@@ -26,7 +26,7 @@ func CreateRecordV2Instruction(
 	}
 
 	if out.IsSub {
-		parent, err := utils.GetDomainKeySync(domain, types.VersionUnspecified)
+		parent, err := utils.GetDomainKeySync(domain, types.V0)
 		if err != nil {
 			return nil, spl.NewSNSError(spl.InvalidParrent, "parent could not be found", err)
 		}

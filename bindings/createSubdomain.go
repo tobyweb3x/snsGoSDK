@@ -28,7 +28,7 @@ func CreateSubdomain(
 		return nil, spl.NewSNSError(spl.InvalidDomain, "The subdomain name is malformed", nil)
 	}
 
-	out, err := utils.GetDomainKeySync(subdomain, types.VersionUnspecified)
+	out, err := utils.GetDomainKeySync(subdomain, types.V0)
 	if err != nil {
 		return nil, err
 	}

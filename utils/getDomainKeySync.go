@@ -57,7 +57,7 @@ func GetDomainKeySync(domain string, record types.RecordVersion) (DomainKeyResul
 
 		return DomainKeyResult{PubKey: result.PubKey, Hashed: result.Hashed, IsSub: true, Parent: parentKey.PubKey}, nil
 
-	} else if len(splitted) == 3 && record != types.VersionUnspecified {
+	} else if len(splitted) == 3 && record != types.V0 {
 
 		rootDomain := splitted[2]
 		subDomain := splitted[1]
