@@ -42,10 +42,8 @@ func CreateSubdomain(
 		return nil, err
 	}
 
-	var whoTopay solana.PublicKey
-	if !feePayer.IsZero() {
-		whoTopay = feePayer
-	} else {
+	whoTopay := feePayer
+	if feePayer.IsZero() {
 		whoTopay = owner
 	}
 

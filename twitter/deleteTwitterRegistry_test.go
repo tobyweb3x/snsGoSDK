@@ -126,21 +126,6 @@ func TestDeleteTwitterRegistry(t *testing.T) {
 			}
 
 			assert.Nil(t, simTxn.Value.Err)
-			arr, _ := tx.AccountMetaList()
-			for _, v := range tx.Message.Instructions {
-				fmt.Println("programId---", arr[v.ProgramIDIndex])
-				fmt.Println("keys----", len(v.Accounts))
-				for _, v := range v.Accounts {
-					fmt.Printf("%+v\n", *arr[v])
-				}
-				fmt.Println("data----", v.Data)
-				fmt.Println()
-			}
-
-			fmt.Println("Logs:", len(simTxn.Value.Logs))
-			for i, v := range simTxn.Value.Logs {
-				fmt.Printf("%d--->  %s\n", i+1, v)
-			}
 		})
 	}
 }

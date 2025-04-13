@@ -24,7 +24,7 @@ func GetRecordFromMint(
 				{
 					Memcmp: &rpc.RPCFilterMemcmp{
 						Offset: 0,
-						Bytes:  []byte{3},
+						Bytes:  []byte{2},
 					},
 				},
 				{
@@ -40,7 +40,7 @@ func GetRecordFromMint(
 		return nil, err
 	}
 
-	if result == nil {
+	if len(result) == 0 {
 		return nil, errors.New("empty values were returned")
 	}
 
@@ -50,6 +50,7 @@ func GetRecordFromMint(
 			accounts[i] = nil
 			continue
 		}
+
 		accounts[i] = v.Account
 	}
 

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/binary"
 	"errors"
-	"fmt"
+	"slices"
 
 	bin "github.com/gagliardetto/binary"
 	"github.com/gagliardetto/solana-go"
@@ -18,9 +18,9 @@ func RetrieveRecords(
 	owner solana.PublicKey,
 ) ([]NftRecord, error) {
 	data := make([]byte, 8)
-	binary.LittleEndian.PutUint64(data, 2)
+	binary.Encode(data, binary.LittleEndian, uint64(1))
 	result, err := conn.GetProgramAccountsWithOpts(
-		context.TODO(),
+		context.Background(),
 		solana.TokenProgramID,
 		&rpc.GetProgramAccountsOpts{
 			Filters: []rpc.RPCFilter{
@@ -50,40 +50,40 @@ func RetrieveRecords(
 		return nil, errors.New("empty result from call to GetProgramAccount")
 	}
 
-	fmt.Println("len of results", len(result))
-
 	tokenAcc := make([]token.Account, 0, len(result))
 	promises := make([]NftRecord, 0, len(result))
 
 	for _, v := range result {
 		var account token.Account
-		if err := bin.NewBorshDecoder(v.Account.Data.GetBinary()).
-			Decode(&account); err != nil {
+		if err := bin.NewBorshDecoder(v.Account.Data.GetBinary()).Decode(&account); err != nil {
 			tokenAcc = append(tokenAcc, token.Account{})
 			continue
 		}
+
 		tokenAcc = append(tokenAcc, account)
 	}
 
 	for _, v := range tokenAcc {
 		record, err := GetRecordFromMint(conn, v.Mint)
 		if err != nil {
-			promises = append(promises, NftRecord{})
 			continue
 		}
 
 		if len(record) == 1 {
 			if data := record[0].Data; data != nil {
-				nf := NftRecord{}
+				var nf NftRecord
 				if err := borsh.Deserialize(&nf, data.GetBinary()); err != nil {
-					promises = append(promises, NftRecord{})
 					continue
 				}
+
+				if nf.NameAccount.Equals(solana.SystemProgramID) && nf.NftMint.Equals(solana.SystemProgramID) &&
+					nf.Owner.Equals(solana.SystemProgramID) && nf.Tag == 0 && nf.Nonce == 0 {
+					continue
+				}
+
 				promises = append(promises, nf)
-				continue
 			}
 		}
-		promises = append(promises, NftRecord{})
 	}
-	return promises, nil
+	return slices.Clip(promises), nil
 }

@@ -96,7 +96,7 @@ func TestTransferSubdomain(t *testing.T) {
 				return
 			}
 
-			out, err := conn.SimulateTransactionWithOpts(
+			simTxn, err := conn.SimulateTransactionWithOpts(
 				context.TODO(),
 				tx,
 				&rpc.SimulateTransactionOpts{},
@@ -105,9 +105,7 @@ func TestTransferSubdomain(t *testing.T) {
 				t.Fatalf("simulateTransactionWithOpts failed: error: %v", err)
 				return
 			}
-
-			assert.Equal(t, out.Value.Err, nil)
-			// assert.Nil(t, out.Value.Err)
+			assert.Nil(t, simTxn.Value.Err)
 		})
 
 	}
