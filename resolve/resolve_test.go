@@ -132,7 +132,7 @@ func TestResolve(t *testing.T) {
 		{
 			name:   "Test case 4",
 			domain: "sns-ip-5-wallet-12",
-			err:    string(spl.InvalidRoA),
+			err:    string(spl.WrongValidation),
 		},
 	}
 

@@ -2,29 +2,12 @@
 
 # Solana Name Servcie Go SDK
 
-This is a rewrite of the [SNS](https://www.sns.id) Typescript [SDK](https://github.com/Bonfida/sns-sdk), in [Go](https://github.com/golang/go). This commit, tagged `0.1.0`, is aim at **correctness** to the [official JS/TS SDK](https://github.com/Bonfida/sns-sdk), which has been achieved by the merits of passing all the tests in the native SDK. This commit tries to resemble very much of the conventions in the native SDK, such has directory naming, file naming, variable and function names (a little optimization there) but still carries the power of Golang concurency (goroutines) anywhere it was needed.
+This is a rewrite of the [SNS](https://www.sns.id) Typescript [SDK](https://github.com/Bonfida/sns-sdk), in [Go](https://github.com/golang/go). This commit, tagged `0.1.0`, is aim at **correctness** to the [official JS/TS SDK](https://github.com/Bonfida/sns-sdk), which has been achieved by the merits of passing **all the tests ✅** in the native SDK. This commit tries to resemble very much of the conventions in the native SDK, such has directory naming, file naming, variable and function names (a little optimization there) but still carries the power of Golang concurency (goroutines) anywhere it was needed.
 
 ### WHY GO
 
-Aside from the team’s mission to develop a Go library, JavaScript/Type~~Shit~~ is fundamentally a browser-oriented language—it is good software to keep it at that.
+Aside from the team’s mission to develop a Go library, JavaScript/Type~~Shit~~ is fundamentally a browser-oriented language—it is good software to keep it at that 🙂.
 
-### ISSUES (on tests)
-
-All tests passed, but three issues remain. A commit addressing additional test issues exists but hasn’t been merged into the main branch(hopefully, that resolves it). These issues are outlined below.
-
-- resolve(resolve.test.ts):
-
-```go
-{
-    name:   "Test case 4",
-    domain: "sns-ip-5-wallet-12",
-    err:    string(spl.InvalidRoA), // it should be  string(splWrongValidation), which is correct if ran outside the jest testing library. The snsGoSDK returns the correct named error.
-},
-```
-
-- getTokenizedDomain (nft.test.ts): this test also fails in the Js SDK (the call to getProgramAccounts returns empty result)
-
-- and there is this last one ` "Test case 1/Create & delete instruction",` from twitter/deleteTwitterRegistry.\_test.go, it passes in the native sdk but fails on my end (should be fixed in the next commit).
 
 ### WHAT HAS BEEN DONE SO FAR
 
@@ -32,7 +15,7 @@ The majority of the native codebase has been ported (more than 95%, others are t
 
 ### MISSION
 
-Time for Go to run Solana backends! Big shoutout to the devs behind 🍚 [solana-go](github.com/gagliardetto/solana-go"). The team’s even offering a grant & bounty for translating the native JS SDK into Go.
+Time for Go to run Solana backends! Big shoutout to the devs behind 🍚 [solana-go](github.com/gagliardetto/solana-go").
 
 ### SETUP
 

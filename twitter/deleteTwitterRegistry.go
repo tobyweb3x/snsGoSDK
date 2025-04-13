@@ -32,7 +32,7 @@ func DeleteTwitterRegistry(
 	}
 
 	return []*solana.GenericInstruction{
-		 // Delete the user facing registry
+		// Delete the user facing registry
 		instructions.DeleteInstruction(
 			spl.NameProgramID,
 			twitterHandleRegistryKey,
@@ -47,5 +47,4 @@ func DeleteTwitterRegistry(
 			verifiedPubKey,
 		),
 	}, nil
-
 }

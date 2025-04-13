@@ -1,8 +1,10 @@
 package utils_test
 
 import (
+	"cmp"
 	"fmt"
 	"os"
+	"slices"
 	"snsGoSDK/utils"
 	"testing"
 
@@ -56,7 +58,9 @@ func TestGetTokenizedDomains(t *testing.T) {
 				t.Fatalf("getTokenizedDomains failed: error: %s\n", err)
 				return
 			}
-			fmt.Printf("%d--- %+v\n", len(got), got)
+			slices.SortFunc(got, func(a, b utils.GetTokenizedDomainsResult) int {
+				return cmp.Compare(b.Reverse, a.Reverse)
+			})
 
 			assert.Equal(t, len(tt.want), len(got))
 			assert.Equal(t, tt.want, got)

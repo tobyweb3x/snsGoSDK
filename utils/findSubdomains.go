@@ -10,15 +10,15 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func  FindSubdomains(conn *rpc.Client, parentKey solana.PublicKey) ([]string, error) {
+func FindSubdomains(conn *rpc.Client, parentKey solana.PublicKey) ([]string, error) {
 	var (
 		g, ctx = errgroup.WithContext(context.Background())
 		reverse,
 		subs rpc.GetProgramAccountsResult
 	)
 
-	g.Go(func() error {
-		r, err := conn.GetProgramAccountsWithOpts(
+	g.Go(func() (err error) {
+		if reverse, err = conn.GetProgramAccountsWithOpts(
 			ctx,
 			spl.NameProgramID,
 			&rpc.GetProgramAccountsOpts{
@@ -37,18 +37,16 @@ func  FindSubdomains(conn *rpc.Client, parentKey solana.PublicKey) ([]string, er
 					},
 				},
 			},
-		)
-		if err != nil {
+		); err != nil {
 			return err
 		}
 
-		reverse = r
 		return nil
 	})
 
-	g.Go(func() error {
+	g.Go(func() (err error) {
 		var zeroUint64Pointer uint64 = 0
-		s, err := conn.GetProgramAccountsWithOpts(
+		if subs, err = conn.GetProgramAccountsWithOpts(
 			ctx,
 			spl.NameProgramID,
 			&rpc.GetProgramAccountsOpts{
@@ -65,11 +63,10 @@ func  FindSubdomains(conn *rpc.Client, parentKey solana.PublicKey) ([]string, er
 					},
 				},
 			},
-		)
-		if err != nil {
+		); err != nil {
 			return err
 		}
-		subs = s
+
 		return nil
 	})
 
