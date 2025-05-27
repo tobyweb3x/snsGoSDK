@@ -141,7 +141,6 @@ func TestResolve(t *testing.T) {
 			func(t *testing.T) {
 				// t.Parallel()
 				_, err := resolve.Resolve(conn, tt.domain, resolve.ResolveConfig{})
-				fmt.Println(err.Error())
 				assert.ErrorContains(t, err, tt.err)
 			})
 	}

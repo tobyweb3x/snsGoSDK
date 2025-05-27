@@ -28,7 +28,7 @@ func TestGetDomainKeysWithReverses(t *testing.T) {
 	)
 
 	type want struct {
-		pubkey,
+		domainKey,
 		domain string
 	}
 
@@ -41,12 +41,12 @@ func TestGetDomainKeysWithReverses(t *testing.T) {
 			name: "Test case 1",
 			user: solana.MustPublicKeyFromBase58("Fxuoy3gFjfJALhwkRcuKjRdechcgffUApeYAfMWck6w8"),
 			want: []want{
-				{pubkey: "9wcWEXmtUbmiAaWdhQ1nSaZ1cmDVdbYNbaeDcKoK5H8r", domain: "wallet-guide-10"},
-				{pubkey: "CZFQJkE2uBqdwHH53kBT6UStyfcbCWzh6WHwRRtaLgrm", domain: "wallet-guide-3"},
-				{pubkey: "ChkcdTKgyVsrLuD9zkUBoUkZ1GdZjTHEmgh5dhnR4haT", domain: "wallet-guide-4"},
-				{pubkey: "2NsGScxHd9bS6gA7tfY3xucCcg6H9qDqLdXLtAYFjCVR", domain: "wallet-guide-6"},
-				{pubkey: "6Yi9GyJKoFAv77pny4nxBqYYwFaAZ8dNPZX9HDXw5Ctw", domain: "wallet-guide-7"},
-				{pubkey: "8XXesVR1EEsCEePAEyXPL9A4dd9Bayhu9MRkFBpTkibS", domain: "wallet-guide-9"},
+				{domainKey: "9wcWEXmtUbmiAaWdhQ1nSaZ1cmDVdbYNbaeDcKoK5H8r", domain: "wallet-guide-10"},
+				{domainKey: "CZFQJkE2uBqdwHH53kBT6UStyfcbCWzh6WHwRRtaLgrm", domain: "wallet-guide-3"},
+				{domainKey: "ChkcdTKgyVsrLuD9zkUBoUkZ1GdZjTHEmgh5dhnR4haT", domain: "wallet-guide-4"},
+				{domainKey: "2NsGScxHd9bS6gA7tfY3xucCcg6H9qDqLdXLtAYFjCVR", domain: "wallet-guide-6"},
+				{domainKey: "6Yi9GyJKoFAv77pny4nxBqYYwFaAZ8dNPZX9HDXw5Ctw", domain: "wallet-guide-7"},
+				{domainKey: "8XXesVR1EEsCEePAEyXPL9A4dd9Bayhu9MRkFBpTkibS", domain: "wallet-guide-9"},
 			},
 		},
 	}
@@ -62,7 +62,7 @@ func TestGetDomainKeysWithReverses(t *testing.T) {
 			})
 			for i, v := range got {
 				assert.Equal(t, tt.want[i].domain, v.Domain)
-				assert.Equal(t, tt.want[i].pubkey, v.PubKey.String())
+				assert.Equal(t, tt.want[i].domainKey, v.DomainKey.String())
 			}
 		})
 
