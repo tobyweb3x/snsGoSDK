@@ -15,7 +15,7 @@ func ReverseLookup(conn *rpc.Client, nameAccount, parent solana.PublicKey) (stri
 		return "", err
 	}
 
-	var nm spl.NameRegistryState
+	nm := spl.NameRegistryState{}
 	registry, err := nm.Retrieve(conn, reverseLookupAccount)
 	if err != nil {
 		return "", spl.NewSNSError(spl.NoAccountData, "The registry data is empty", err)

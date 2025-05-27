@@ -20,25 +20,19 @@ func ReverseLookUpBatch(conn *rpc.Client, nameAccounts []solana.PublicKey) ([]st
 	}
 
 	ns := spl.NameRegistryState{}
-	names, err := ns.RetrieveBatch(conn, reverseLookupAccounts)
+	nameRegistryStates, err := ns.RetrieveBatch(conn, reverseLookupAccounts)
 	if err != nil {
 		return nil, err
 	}
 
-	container := make([]string, 0, len(names))
-	for i, name := range names {
-		if name == nil || name.Data == nil {
-			container = append(container, "")
-			continue
+	container := make([]string, 0, len(nameRegistryStates))
+	for i, nameRegistry := range nameRegistryStates {
+		str := ""
+		if nameRegistry != nil && nameRegistry.Data != nil {
+			str, _ = DeserializeReverse(nameRegistryStates[i].Data, false)
 		}
 
-		d, err := DeserializeReverse(names[i].Data, false)
-		if err != nil {
-			container = append(container, "")
-			continue
-		}
-
-		container = append(container, d)
+		container = append(container, str)
 	}
 
 	return container, nil

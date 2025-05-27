@@ -12,7 +12,7 @@ import (
 )
 
 func TestReverseLookUpBatch(t *testing.T) {
-	
+
 	if err := godotenv.Load(); err != nil {
 		t.Fatalf("cannot load env file: error: %s", err.Error())
 	}
@@ -37,7 +37,7 @@ func TestReverseLookUpBatch(t *testing.T) {
 			solana.MustPublicKeyFromBase58("JCqTzrANia2yfS5jDwpM76rFtyVvj4zu2nozVDk29wTh"),
 			solana.MustPublicKeyFromBase58("2uSQkZRtJDYmBEbSg2WwMeWs2y21PNgGsUNoVRLDGRXZ"),
 			solana.MustPublicKeyFromBase58("54obixuvJKGeJ6zFwYy1zb55G5c5z3B65MRXcc7fmaVU"),
-			// solana.MustPublicKeyFromBase58("5monfqudwcjVztfNa4nAyL4AwwymKgBspdR3RcvhKX4w"),
+			solana.MustPublicKeyFromBase58("45LYEaK4ZwBiymEXNNXPyPKUh8yxaDTVutJbXYwooHLE"),
 		},
 		want: []string{
 			"bonfida",
@@ -45,7 +45,7 @@ func TestReverseLookUpBatch(t *testing.T) {
 			"menbehindwoman",
 			"grimmest",
 			"niftydegen",
-			// "sokka.ambassador",
+			"mrwick",
 		},
 	}
 

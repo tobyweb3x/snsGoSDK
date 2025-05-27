@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"slices"
 	"sync"
 
 	"github.com/gagliardetto/solana-go"
@@ -48,7 +47,7 @@ func (ns *NameRegistryState) Deserialize(data []byte) error {
 func (ns *NameRegistryState) Retrieve(conn *rpc.Client, nameAccountKey solana.PublicKey) (RetrieveResult, error) {
 
 	nameAccount, err := conn.GetAccountInfo(context.Background(), nameAccountKey)
-	if err != nil || nameAccount.Value == nil || nameAccount.Value.Data == nil {
+	if err != nil || nameAccount == nil || nameAccount.Value == nil || nameAccount.Value.Data == nil {
 		return RetrieveResult{}, NewSNSError(AccountDoesNotExist, "The name account does not exist", err)
 	}
 
@@ -68,7 +67,62 @@ func (ns *NameRegistryState) Retrieve(conn *rpc.Client, nameAccountKey solana.Pu
 
 }
 
-func (ns *NameRegistryState) RetrieveBat(conn *rpc.Client, nameAccountKeys []solana.PublicKey) ([]*NameRegistryState, error) {
+// RetrieveBatch fetches multiple name registry entries in batches of 100 using concurrent goroutines.
+// The original order is preserved, and nil is returned for any index where retrieval or deserialization fails.
+func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []solana.PublicKey) ([]*NameRegistryState, error) {
+	var (
+		batchSize = 100
+		mutex     = sync.Mutex{}
+		container = make(map[int]*NameRegistryState, len(nameAccountKeys))
+		g, ctx    = errgroup.WithContext(context.Background())
+	)
+
+	for i := 0; i < len(nameAccountKeys); i += batchSize {
+		batchStart := i // for Go version below 1.22
+		end := min(batchStart+batchSize, len(nameAccountKeys))
+		batchKeys := nameAccountKeys[batchStart:end]
+
+		g.Go(func() error {
+			out, err := conn.GetMultipleAccounts(ctx, batchKeys...)
+			if err != nil {
+				return err
+			}
+
+			if out == nil || out.Value == nil {
+				return errors.New("empty result from GetMultipleAccounts")
+			}
+
+			for j, value := range out.Value {
+				var n *NameRegistryState
+				if value != nil && value.Data != nil {
+					n = &NameRegistryState{}
+					if err := n.Deserialize(value.Data.GetBinary()); err != nil {
+						n = nil
+					}
+				}
+
+				mutex.Lock()
+				container[batchStart+j] = n
+				mutex.Unlock()
+			}
+
+			return nil
+		})
+	}
+
+	if err := g.Wait(); err != nil {
+		return nil, err
+	}
+
+	nameAccounts := make([]*NameRegistryState, len(nameAccountKeys))
+	for i := range len(container) {
+		nameAccounts[i] = container[i]
+	}
+
+	return nameAccounts, nil
+}
+
+func (ns *NameRegistryState) retrieveBatch(conn *rpc.Client, nameAccountKeys []solana.PublicKey) ([]*NameRegistryState, error) {
 	var batchSize = 100
 	nameAccounts := make([]*NameRegistryState, len(nameAccountKeys))
 
@@ -99,58 +153,4 @@ func (ns *NameRegistryState) RetrieveBat(conn *rpc.Client, nameAccountKeys []sol
 	}
 
 	return nameAccounts, nil
-}
-
-func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []solana.PublicKey) ([]*NameRegistryState, error) {
-	var (
-		batchSize    = 100
-		mutex        = sync.Mutex{}
-		nameAccounts = make([]*NameRegistryState, 0, len(nameAccountKeys))
-		g, ctx       = errgroup.WithContext(context.Background())
-	)
-
-	for i := 0; i < len(nameAccountKeys); i += batchSize {
-		end := min(i+batchSize, len(nameAccountKeys))
-		batchKeys := nameAccountKeys[i:end]
-
-		g.Go(func() error {
-			out, err := conn.GetMultipleAccounts(ctx, batchKeys...)
-			if err != nil {
-				return err
-			}
-
-			if out == nil || out.Value == nil {
-				return errors.New("empty result")
-			}
-
-			tempResults := make([]*NameRegistryState, len(out.Value))
-			for j, value := range out.Value {
-				if value == nil || value.Data == nil {
-					tempResults[j] = nil
-					continue
-				}
-
-				var n = &NameRegistryState{}
-				if err := n.Deserialize(value.Data.GetBinary()); err != nil {
-					tempResults[j] = nil
-					continue
-				}
-
-				tempResults[j] = n
-			}
-
-			// Lock only when appending to shared slice
-			mutex.Lock()
-			nameAccounts = append(nameAccounts, tempResults...)
-			mutex.Unlock()
-
-			return nil
-		})
-	}
-
-	if err := g.Wait(); err != nil {
-		return nil, err
-	}
-
-	return slices.Clip(nameAccounts), nil
 }
