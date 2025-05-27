@@ -3,3 +3,4 @@ snsGoSDK
 .vscode/
 .env
 main.go
+.DS_Store/
