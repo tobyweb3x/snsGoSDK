@@ -10,7 +10,7 @@ func DeleteInstruction(
 
 	keys := []*solana.AccountMeta{
 		{PublicKey: nameAccountKey, IsSigner: false, IsWritable: true},
-		{PublicKey: nameOwnerKey, IsSigner: true, IsWritable: true},
+		{PublicKey: nameOwnerKey, IsSigner: true, IsWritable: nameOwnerKey.Equals(refundTargetKey)},
 		{PublicKey: refundTargetKey, IsSigner: false, IsWritable: true},
 	}
 	return solana.NewInstruction(
