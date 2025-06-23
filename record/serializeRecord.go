@@ -26,17 +26,18 @@ func SerializeRecord(str string, record types.Record) ([]byte, error) {
 		return []byte(str), nil
 	}
 
-	if record == types.SOL {
+	switch record {
+	case types.SOL:
 		return nil, spl.NewSNSError(spl.UnsupportedRecord, "Use `serializeSolRecord` for SOL record", nil)
 
-	} else if record == types.ETH || record == types.BSC {
+	case types.ETH, types.BSC:
 		if !strings.HasPrefix(str, "0x") {
 			return nil, spl.NewSNSError(spl.InvalidEvmAddress, "the record content must start with `0x`", nil)
 		}
 		str = strings.TrimPrefix(str, "0x")
 		return hex.DecodeString(str)
 
-	} else if record == types.Injective {
+	case types.Injective:
 		hrp, decoded, err := bech32.Decode(str)
 		if err != nil {
 			return nil, spl.NewSNSError(spl.InvalidInjectiveAddress, "the record content must be a valid bech32 string", err)
@@ -54,7 +55,7 @@ func SerializeRecord(str string, record types.Record) ([]byte, error) {
 		}
 		return decoded, nil
 
-	} else if record == types.A {
+	case types.A:
 		ip := net.ParseIP(str)
 		if ip == nil {
 			return nil, spl.NewSNSError(spl.InvalidARecord, "the record content must be a valid IP address", nil)
@@ -66,7 +67,7 @@ func SerializeRecord(str string, record types.Record) ([]byte, error) {
 		}
 		return ip, nil
 
-	} else if record == types.AAAA {
+	case types.AAAA:
 		ip := net.ParseIP(str)
 		if ip == nil {
 			return nil, spl.NewSNSError(spl.InvalidAAAARecord, "the record content must be a valid IP address", nil)
@@ -78,13 +79,14 @@ func SerializeRecord(str string, record types.Record) ([]byte, error) {
 
 		return ip, nil
 
-	} else if record == types.Background {
+	case types.Background:
 		out, err := solana.PublicKeyFromBase58(str)
 		if err != nil {
 			return nil, spl.NewSNSError("", "the record content must be a valid PublicKey", err)
 		}
 		return out.Bytes(), nil
-	}
 
-	return nil, spl.NewSNSError(spl.InvalidRecordInput, "The provided record data is invalid", nil)
+	default:
+		return nil, spl.NewSNSError(spl.InvalidRecordInput, "The provided record data is invalid", nil)
+	}
 }

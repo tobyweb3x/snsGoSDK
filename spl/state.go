@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"sync"
+	"runtime"
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/gagliardetto/solana-go/rpc"
@@ -72,8 +72,7 @@ func (ns *NameRegistryState) Retrieve(conn *rpc.Client, nameAccountKey solana.Pu
 func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []solana.PublicKey) ([]*NameRegistryState, error) {
 	var (
 		batchSize = 100
-		mutex     = sync.Mutex{}
-		container = make(map[int]*NameRegistryState, len(nameAccountKeys))
+		container = make([]*NameRegistryState, len(nameAccountKeys))
 		g, ctx    = errgroup.WithContext(context.Background())
 	)
 
@@ -81,6 +80,8 @@ func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []s
 		batchStart := i // for Go version below 1.22
 		end := min(batchStart+batchSize, len(nameAccountKeys))
 		batchKeys := nameAccountKeys[batchStart:end]
+
+		g.SetLimit(runtime.NumCPU())
 
 		g.Go(func() error {
 			out, err := conn.GetMultipleAccounts(ctx, batchKeys...)
@@ -92,6 +93,10 @@ func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []s
 				return errors.New("empty result from GetMultipleAccounts")
 			}
 
+			if len(out.Value) > len(batchKeys) {
+				return errors.New("GetMultipleAccounts returned more result than expected")
+			}
+
 			for j, value := range out.Value {
 				var n *NameRegistryState
 				if value != nil && value.Data != nil {
@@ -101,9 +106,7 @@ func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []s
 					}
 				}
 
-				mutex.Lock()
 				container[batchStart+j] = n
-				mutex.Unlock()
 			}
 
 			return nil
@@ -114,12 +117,7 @@ func (ns *NameRegistryState) RetrieveBatch(conn *rpc.Client, nameAccountKeys []s
 		return nil, err
 	}
 
-	nameAccounts := make([]*NameRegistryState, len(nameAccountKeys))
-	for i := range len(container) {
-		nameAccounts[i] = container[i]
-	}
-
-	return nameAccounts, nil
+	return container, nil
 }
 
 func (ns *NameRegistryState) retrieveBatch(conn *rpc.Client, nameAccountKeys []solana.PublicKey) ([]*NameRegistryState, error) {

@@ -16,7 +16,7 @@ func GetRecordsDeserialized(
 ) ([]string, error) {
 
 	pubkeys := make([]solana.PublicKey, len(records))
-	for i := 0; i < len(records); i++ {
+	for i := range len(records) {
 		pubkey, err := GetRecordKeySync(domain, records[i])
 		if err != nil {
 			pubkeys[i] = solana.PublicKey{}
@@ -70,7 +70,7 @@ func GetRecordsRaw(
 	records []types.Record,
 ) ([]*spl.NameRegistryState, error) {
 	pubkeys := make([]solana.PublicKey, len(records))
-	for i := 0; i < len(records); i++ {
+	for i := range len(records) {
 		pubkey, err := GetRecordKeySync(domain, records[i])
 		if err != nil {
 			pubkeys[i] = solana.PublicKey{}
